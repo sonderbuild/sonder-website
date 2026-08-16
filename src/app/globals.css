@@ -1,10 +1,30 @@
 @import "tailwindcss";
 
-:root { --background: #f5f4f0; --foreground: #161614; }
+:root {
+  --color-ink: #161614;
+  --color-paper: #f5f4f0;
+  --color-paper-soft: #eae8e1;
+  --color-paper-creative: #f3ece1;
+  --color-paper-apps: #eef1f0;
+  --color-paper-neutral: #f7f7f5;
+  --color-line: rgb(22 22 20 / 0.1);
+  --color-muted: rgb(22 22 20 / 0.6);
+  --color-subtle: rgb(22 22 20 / 0.5);
+  --background: var(--color-paper);
+  --foreground: var(--color-ink);
+}
 html { background: var(--background); }
 body { background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
-::selection { background: #171716; color: #f7f7f5; }
-.eyebrow { font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; color: rgb(0 0 0 / 0.6); }
+::selection { background: var(--color-ink); color: var(--color-paper-neutral); }
+.atmosphere-studio { --section-background: var(--color-paper); --section-muted: var(--color-muted); }
+.atmosphere-apps { --section-background: var(--color-paper-apps); --section-muted: var(--color-muted); }
+.atmosphere-creative { --section-background: var(--color-paper-creative); --section-muted: var(--color-muted); }
+.atmosphere-neutral { --section-background: var(--color-paper-neutral); --section-muted: var(--color-muted); }
+.section-atmosphere { background: var(--section-background); }
+.type-display { font-family: Iowan Old Style, Baskerville, Times New Roman, serif; font-weight: 400; letter-spacing: -0.06em; }
+.type-body { color: var(--section-muted, var(--color-muted)); }
+.type-metadata { font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; color: var(--section-muted, var(--color-muted)); }
+.eyebrow { font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; color: var(--section-muted, var(--color-muted)); }
 .link { text-underline-offset: 0.25em; transition: text-decoration-color 150ms ease; }
 .link:hover, .link:focus-visible { text-decoration-line: underline; }
 .display { font-family: Iowan Old Style, Baskerville, Times New Roman, serif; font-weight: 400; letter-spacing: -0.06em; }

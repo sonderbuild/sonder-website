@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductHero } from "@/components/products/product-hero";
+import { ProductSection } from "@/components/products/product-section";
 import { getProduct, products } from "@/data/products";
 
 type ProductPageProps = { params: Promise<{ slug: string }> };
@@ -15,5 +16,5 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductPage({ params }: ProductPageProps) {
   const product = getProduct((await params).slug);
   if (!product) notFound();
-  return <ProductHero product={product} />;
+  return <><ProductHero product={product} />{product.sections.map((section, index) => <ProductSection key={`${section.type}-${index}`} productName={product.name} section={section} />)}</>;
 }

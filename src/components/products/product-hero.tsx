@@ -1,0 +1,6 @@
+import { Container } from "@/components/ui/container";
+import type { Product } from "@/data/products";
+
+export function ProductHero({ product }: { product: Product }) {
+  return <><section className="border-b border-black/10"><Container className="grid gap-12 py-20 sm:py-28 lg:grid-cols-12"><div className="lg:col-span-3"><p className="eyebrow">{product.status}</p></div><div className="lg:col-span-8 lg:col-start-5"><h1 className="text-6xl font-medium tracking-[-0.06em] sm:text-8xl">{product.name}</h1><p className="mt-7 max-w-2xl text-xl leading-8 text-black/65 sm:text-2xl sm:leading-9">{product.description}</p><dl className="mt-14 grid max-w-xl grid-cols-2 border-t border-black/10 pt-5 text-sm"><div><dt className="text-black/50">Status</dt><dd className="mt-1 font-medium">{product.status}</dd></div><div><dt className="text-black/50">Platform</dt><dd className="mt-1 font-medium">{product.platform}</dd></div></dl></div></Container></section><section aria-label={`${product.name} media`} className="py-8 sm:py-12"><Container><div className="flex aspect-[16/10] items-end border border-black/10 bg-stone-100 p-6 sm:p-10"><p className="text-sm text-black/45">Product media coming soon</p></div></Container></section></>;
+}

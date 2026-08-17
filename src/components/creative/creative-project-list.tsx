@@ -1,0 +1,5 @@
+import type { CreativeProject } from "@/data/creative";
+
+export function CreativeProjectList({ projects }: { projects: CreativeProject[] }) {
+  return <div className="divide-y divide-[color:var(--color-line)] border-y border-[color:var(--color-line)]">{projects.map((project) => <article key={project.name} className="grid gap-6 py-8 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-10 sm:py-10"><div><div className="flex flex-wrap gap-x-4 gap-y-1 text-sm"><p className="type-metadata">{project.category}</p><p className="type-body">{project.platform}</p></div><h2 className="mt-4 text-3xl font-medium tracking-[-0.045em] sm:text-4xl">{project.name}</h2><p className="type-body mt-3 max-w-xl text-lg leading-8">{project.description}</p>{project.links.length > 0 ? <ul aria-label={`${project.name} links`} className="mt-5 flex flex-wrap gap-x-4 gap-y-2">{project.links.map((link) => <li key={link.href}><a className="link text-sm font-medium" href={link.href}>{link.label}</a></li>)}</ul> : null}</div><p className="type-metadata sm:pt-1">{project.status}</p></article>)}</div>;
+}

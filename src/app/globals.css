@@ -10,6 +10,7 @@
   --color-line: rgb(22 22 20 / 0.1);
   --color-muted: rgb(22 22 20 / 0.6);
   --color-subtle: rgb(22 22 20 / 0.5);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --background: var(--color-paper);
   --foreground: var(--color-ink);
 }
@@ -21,6 +22,26 @@ body { background: var(--background); color: var(--foreground); font-family: Ari
 .atmosphere-creative { --section-background: var(--color-paper-creative); --section-muted: var(--color-muted); }
 .atmosphere-neutral { --section-background: var(--color-paper-neutral); --section-muted: var(--color-muted); }
 .section-atmosphere { background: var(--section-background); }
+.atmosphere-background { position: absolute; inset: 0; pointer-events: none; overflow: hidden; background: var(--atmosphere-base); }
+.atmosphere-background__field, .atmosphere-background__texture { position: absolute; inset: -18%; }
+.atmosphere-background__field { filter: blur(42px); will-change: transform, opacity; }
+.atmosphere-background__field--one { background: radial-gradient(ellipse 48% 42% at 18% 22%, var(--atmosphere-field-one), transparent 72%); animation: atmosphere-drift-one 26s var(--ease-in-out) infinite; }
+.atmosphere-background__field--two { background: radial-gradient(ellipse 42% 48% at 82% 20%, var(--atmosphere-field-two), transparent 74%); animation: atmosphere-drift-two 34s var(--ease-in-out) infinite; }
+.atmosphere-background__field--three { background: radial-gradient(ellipse 52% 38% at 46% 80%, var(--atmosphere-field-three), transparent 72%); animation: atmosphere-drift-three 30s var(--ease-in-out) infinite; }
+.atmosphere-background__field--four { background: radial-gradient(ellipse 36% 44% at 68% 54%, var(--atmosphere-field-four), transparent 74%); animation: atmosphere-drift-four 38s var(--ease-in-out) infinite; }
+.atmosphere-background__texture { inset: -8%; background-repeat: repeat; background-size: 180px 180px; mix-blend-mode: soft-light; will-change: transform, opacity; }
+.atmosphere-background__texture--coarse { --atmosphere-grain-strength: var(--atmosphere-grain-opacity); opacity: var(--atmosphere-grain-strength); background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.42' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); animation: atmosphere-grain 32s linear infinite; }
+.atmosphere-background__texture--fine { --atmosphere-grain-strength: calc(var(--atmosphere-grain-opacity) * 0.55); opacity: var(--atmosphere-grain-strength); background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); background-size: 120px 120px; animation: atmosphere-grain 23s linear infinite reverse; }
+@keyframes atmosphere-drift-one { 0%, 100% { transform: translate3d(-2%, 1%, 0) scale(1.04); opacity: 0.9; } 50% { transform: translate3d(6%, -4%, 0) scale(1.13); opacity: 1; } }
+@keyframes atmosphere-drift-two { 0%, 100% { transform: translate3d(3%, -2%, 0) scale(1.08); opacity: 0.76; } 50% { transform: translate3d(-5%, 5%, 0) scale(1.15); opacity: 0.96; } }
+@keyframes atmosphere-drift-three { 0%, 100% { transform: translate3d(-3%, 4%, 0) scale(1.1); opacity: 0.78; } 50% { transform: translate3d(4%, -5%, 0) scale(1.18); opacity: 0.98; } }
+@keyframes atmosphere-drift-four { 0%, 100% { transform: translate3d(4%, 2%, 0) scale(1.02); opacity: 0.52; } 50% { transform: translate3d(-6%, -3%, 0) scale(1.12); opacity: 0.86; } }
+@keyframes atmosphere-grain { 0%, 100% { transform: translate3d(-1%, -1%, 0) scale(1.02); opacity: var(--atmosphere-grain-strength); } 50% { transform: translate3d(1%, 1%, 0) scale(1.04); opacity: calc(var(--atmosphere-grain-strength) * 0.82); } }
+@media (prefers-reduced-motion: reduce) { .atmosphere-background__field, .atmosphere-background__texture { animation: none; } }
+.atmosphere-background--studio { --atmosphere-base: var(--color-paper); --atmosphere-field-one: rgb(225 210 189 / 0.76); --atmosphere-field-two: rgb(179 145 118 / 0.38); --atmosphere-field-three: rgb(198 177 143 / 0.44); --atmosphere-field-four: rgb(139 143 121 / 0.18); --atmosphere-grain-opacity: 0.062; }
+.atmosphere-background--apps { --atmosphere-base: var(--color-paper-apps); --atmosphere-field-one: rgb(183 198 198 / 0.58); --atmosphere-field-two: rgb(111 129 134 / 0.24); --atmosphere-field-three: rgb(204 211 208 / 0.62); --atmosphere-field-four: rgb(88 99 103 / 0.14); --atmosphere-grain-opacity: 0.05; }
+.atmosphere-background--creative { --atmosphere-base: var(--color-paper-creative); --atmosphere-field-one: rgb(225 189 151 / 0.64); --atmosphere-field-two: rgb(151 96 70 / 0.36); --atmosphere-field-three: rgb(190 133 93 / 0.46); --atmosphere-field-four: rgb(102 82 66 / 0.2); --atmosphere-grain-opacity: 0.065; }
+.atmosphere-background--neutral { --atmosphere-base: var(--color-paper-neutral); --atmosphere-field-one: rgb(226 224 213 / 0.44); --atmosphere-field-two: rgb(185 184 176 / 0.24); --atmosphere-field-three: rgb(239 238 232 / 0.62); --atmosphere-field-four: rgb(164 164 154 / 0.12); --atmosphere-grain-opacity: 0.042; }
 .type-display { font-family: Iowan Old Style, Baskerville, Times New Roman, serif; font-weight: 400; letter-spacing: -0.06em; }
 .type-body { color: var(--section-muted, var(--color-muted)); }
 .type-metadata { font-size: 0.875rem; font-weight: 500; letter-spacing: 0.02em; color: var(--section-muted, var(--color-muted)); }

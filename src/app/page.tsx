@@ -2,14 +2,16 @@ import Link from "next/link";
 
 import { ArrowUpRight } from "@/components/icons/arrow-up-right";
 import { ProductCard } from "@/components/products/product-card";
+import { AtmosphereBackground } from "@/components/ui/atmosphere-background";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { creativeTools, products } from "@/data/products";
 
 export default function Home() {
   return <>
-    <Section atmosphere="studio" className="border-b border-[color:var(--color-line)]">
-      <Container className="grid min-h-[76svh] content-end gap-12 py-20 sm:py-28 lg:grid-cols-12 lg:py-36">
+    <Section atmosphere="studio" className="relative isolate overflow-hidden border-b border-[color:var(--color-line)]">
+      <AtmosphereBackground variant="studio" />
+      <Container className="relative z-[1] grid min-h-[76svh] content-end gap-12 py-20 sm:py-28 lg:grid-cols-12 lg:py-36">
         <p className="eyebrow lg:col-span-3">Independent software studio<br />Berlin · Everywhere</p>
         <div className="lg:col-span-8 lg:col-start-5"><h1 className="type-display max-w-5xl text-balance text-6xl leading-[0.92] sm:text-8xl lg:text-9xl">Tools for a more attentive practice.</h1><p className="type-body mt-10 max-w-xl text-lg leading-8 sm:text-xl">sonder makes purposeful software for the people who notice how things work — and how they could work better.</p></div>
       </Container>

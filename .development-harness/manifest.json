@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "harnessVersion": "1.0.0",
+  "adapters": [
+    "codex"
+  ],
+  "profiles": [
+    "web-common"
+  ],
+  "managedFiles": {
+    ".development-harness/managed/core/policies/documentation-lifecycle.md": {
+      "source": "core/policies/documentation-lifecycle.md",
+      "sha256": "7007b017710b80f0c479775a90da23b68c3b1756fe7798a64e135daaf8a9baf6"
+    },
+    ".development-harness/managed/core/policies/integration-completeness.md": {
+      "source": "core/policies/integration-completeness.md",
+      "sha256": "a0e495111e3a1b9e9542ecb92561f231754caf32fc0d9d360037e91ab011ef9d"
+    },
+    ".development-harness/managed/core/policies/milestone-delivery.md": {
+      "source": "core/policies/milestone-delivery.md",
+      "sha256": "8771426518f66ad0614f8320fa7bc269d51f014e7887126cfccf2d05e9c07255"
+    },
+    ".development-harness/managed/core/policies/repository-reconciliation.md": {
+      "source": "core/policies/repository-reconciliation.md",
+      "sha256": "41f96229e167ab54f6c60c2c25bbf7e070fd79988cd7beba9373dba7e5195153"
+    },
+    ".development-harness/managed/core/policies/roadmap-and-autonomy.md": {
+      "source": "core/policies/roadmap-and-autonomy.md",
+      "sha256": "c12f477317508e4811d9a9a74bb3c41c8ee98eeb4354e9393927339d9beacbb1"
+    },
+    ".development-harness/managed/core/policies/runtime-evidence.md": {
+      "source": "core/policies/runtime-evidence.md",
+      "sha256": "1f18243d0ed26555a9356c26ffdcb4ff82245af9d7b1f00917448d49a5a1ab62"
+    },
+    ".development-harness/managed/core/policies/self-review.md": {
+      "source": "core/policies/self-review.md",
+      "sha256": "5d9429771dcbf89a21b10533ebae8657f56fc8d2a46f85ba765574ef7a2e0801"
+    },
+    ".development-harness/managed/core/policies/verification.md": {
+      "source": "core/policies/verification.md",
+      "sha256": "ef7270d72b698e369ba2e1f2f95fca8d1c510e76ee6b362f4c4481c0df88d02d"
+    },
+    ".development-harness/managed/core/document-schemas/architecture.md": {
+      "source": "core/document-schemas/architecture.md",
+      "sha256": "ccd46029cdeecef143e06024ce3c5808e9e155f2f7c28a9e04cd513ac83b2d59"
+    },
+    ".development-harness/managed/core/document-schemas/decision-record.md": {
+      "source": "core/document-schemas/decision-record.md",
+      "sha256": "68f8391e9c124d226bc5e4add64f18c4a7666ca23d4dba1d48d0589209a53aeb"
+    },
+    ".development-harness/managed/core/document-schemas/execution-plan.md": {
+      "source": "core/document-schemas/execution-plan.md",
+      "sha256": "3c208e356c1f6bcde873406360994460957cf1c684170bf015b250c1dcba9f10"
+    },
+    ".development-harness/managed/core/document-schemas/product.md": {
+      "source": "core/document-schemas/product.md",
+      "sha256": "aa15c614b7821a0352dc44b48ea8bebe6a3b9a28864274187cdaa8e2198cf8f5"
+    },
+    ".development-harness/managed/core/document-schemas/roadmap.md": {
+      "source": "core/document-schemas/roadmap.md",
+      "sha256": "efd2045bf01fd197582ef6615bdd1aee867f4a6273ee34c471f4aead9e8dcf4a"
+    },
+    ".development-harness/managed/profiles/web-common/PROFILE.md": {
+      "source": "profiles/web-common/PROFILE.md",
+      "sha256": "db1a2d0361194e7ca9a2fead579cae37176d295db44329db59dd377415dacfb5"
+    }
+  }
+}

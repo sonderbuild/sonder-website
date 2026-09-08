@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "required": [
+    "eslint",
+    "vitest",
+    "next-production-build",
+    "local-browser-smoke",
+    "workos-magic-auth-staging",
+    "website-api-account-session-staging",
+    "api-owned-commerce-email-staging",
+    "production-release-validation"
+  ],
+  "hooks": {
+    "eslint": {
+      "mode": "command",
+      "command": "pnpm lint"
+    },
+    "vitest": {
+      "mode": "command",
+      "command": "pnpm test"
+    },
+    "next-production-build": {
+      "mode": "command",
+      "command": "pnpm build"
+    },
+    "local-browser-smoke": {
+      "mode": "manual",
+      "instructions": "Run pnpm dev and manually inspect affected public routes. A local login form or account placeholder is not WorkOS, API, staging, or production evidence; do not use customer data or production credentials locally."
+    },
+    "workos-magic-auth-staging": {
+      "mode": "manual",
+      "instructions": "Use the protected staging Vercel deployment with the separate WorkOS test environment. Exercise Magic Auth request, invalid/expired code, rate limit, sign-out, and verified-email behavior without logging an email or code. Password, social, hosted AuthKit, and passkey flows are intentionally out of scope."
+    },
+    "website-api-account-session-staging": {
+      "mode": "manual",
+      "instructions": "In protected staging, confirm the server-side authenticated website call to GET /v1/customer/session yields linked, unlinked, and unavailable account presentation as applicable. The browser must not select a customer or call the Worker directly; record no customer data."
+    },
+    "api-owned-commerce-email-staging": {
+      "mode": "manual",
+      "instructions": "Lemon Squeezy Test Mode webhooks, commerce projection, entitlement/licensing changes, Resend delivery, and webhook retries are owned and validated in sonder-api using its staging runbooks. This repository must not treat website fixtures, a checkout return, or a local build as evidence for those paths."
+    },
+    "production-release-validation": {
+      "mode": "manual",
+      "instructions": "Production deployment, live purchases, production email, production webhooks, D1 migrations, and irreversible operations require explicit authorization and the applicable product-platform production gates. Do not perform them during ordinary website development."
+    }
+  }
+}

@@ -1,100 +1,63 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# sonder.build — project handoff
 
-# This is NOT the Next.js you know
+## Product and authority
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+`sonder.build` is sonder's Vercel-hosted Next.js public studio site and
+authenticated account presentation. It owns marketing/UI rendering, the custom
+WorkOS Magic Auth interface, the sealed server-side website session, and the
+minimal account diagnostic surface. It is not the commerce, entitlement,
+licensing, webhook, email-delivery, or platform-data service.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+- [Product-platform index](docs/product-platform/README.md) maps the
+  authoritative project documents.
+- [Architecture](docs/product-platform/architecture.md) owns the website ↔
+  `sonder-api` boundary.
+- [Authentication](docs/product-platform/authentication.md) owns custom WorkOS
+  Magic Auth and account-session policy.
+- [Environments](docs/product-platform/environments.md) owns local, preview,
+  staging, and production safety boundaries.
+- [Roadmap](docs/product-platform/roadmap.md) owns implementation status. It
+  records R6 as staging-verified; there is no committed active execution plan.
+  Production gates require explicit external authority and are never selected
+  autonomously from local dirty work.
+- Decisions, security guidance, runbooks, and licensing/data-model details are
+  indexed from the product-platform README.
 
-<!-- END:nextjs-agent-rules -->
+## Website and API boundary
 
-# Sonder Website Guidelines
+The website owns public pages, account presentation, server-side WorkOS session
+handling, and its server-to-server call to the documented
+`GET /v1/customer/session` endpoint. `sonder-api` owns verified customer
+identity resolution, D1, Lemon Squeezy and Resend webhooks, commerce
+projection, entitlements, licensing, activation, signing keys, provider
+credentials, and operational email handling.
 
-## Brand
+Vercel never receives Lemon, Worker, GitHub App, D1, Resend, or entitlement
+signing secrets. A checkout return, browser-provided customer identity, local
+build, fixture, or preview is never commerce, entitlement, staging, or
+production evidence.
 
-- Brand name is always written as `sonder` lowercase.
-- sonder is an independent software studio.
-- The website should feel like a premium creative technology studio, not a SaaS landing page.
+## Environment and implementation constraints
 
-## Design Principles
+- Use `pnpm` with the existing Next.js App Router/TypeScript/Tailwind setup.
+  Read the installed Next.js documentation before changing framework behavior;
+  this Next.js version has breaking changes.
+- Local development is `pnpm dev`; Vercel previews are protected marketing/UI
+  review only and have no shared production Worker, customer data, or commerce.
+- Staging uses separate WorkOS test, Worker, D1, Lemon Test Mode, and Resend
+  test resources. Production deployment, purchases, email, webhook replay, and
+  other irreversible external operations require explicit authorization.
+- Password, social login, hosted AuthKit fallback, passkey UI, customer portal
+  data, account claims, native OAuth, and licensing changes are outside the
+  current R6 website boundary.
 
-Prefer:
+## Skills, validation, and shared workflow
 
-- strong typography
-- generous whitespace
-- refined layouts
-- subtle motion
-- careful details
-- restrained colors
-- editorial presentation
+Use the relevant local design skill under `.agents/skills/` for UI or motion
+work. Read [.development-harness/validation.json](.development-harness/validation.json)
+before validation; it separates automated checks from browser, credentialed,
+staging, API, provider, and production-only evidence.
 
-Avoid:
-
-- generic startup gradients
-- excessive cards
-- dashboard-style layouts
-- template-like marketing sections
-- unnecessary visual effects
-
-The design inspiration is closer to Apple product pages and boutique design studios.
-
-## Architecture
-
-Use:
-
-- Next.js App Router
-- TypeScript
-- Tailwind CSS
-- reusable components
-- data-driven product definitions
-
-Prefer:
-
-- small focused components
-- clear folder structure
-- maintainable code
-
-Avoid:
-
-- unnecessary dependencies
-- premature abstractions
-- backend features before they are needed
-
-## Products
-
-Current products:
-
-- Pulse — macOS system monitoring and insights
-- Frame — macOS productivity/document workflow
-- Crate — macOS music metadata intelligence
-- Max for Live devices and creative music tools
-
-## Development Rules
-
-Before changes:
-
-- inspect existing architecture
-- understand current dependencies
-- preserve existing conventions
-
-After changes:
-
-Run:
-
-```bash
-pnpm lint
-pnpm build
-```
-
-Do not commit unless explicitly requested and validation passes.
-```
-
-Then save it:
-
-```zsh
-cd ~/Projekte/Web/sonder-website
-
-git add AGENTS.md
-git commit -m "Add Sonder website development guidelines"
-git push origin main
-```
+Use `.development-harness/managed/` for reusable workflow policy. Reconcile
+project truth and current Git state before substantial work; do not create
+competing root product, architecture, or roadmap documents.

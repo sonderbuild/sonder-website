@@ -23,6 +23,19 @@ licensing, webhook, email-delivery, or platform-data service.
 - Decisions, security guidance, runbooks, and licensing/data-model details are
   indexed from the product-platform README.
 
+## Cross-repository authority
+
+This repository remains authoritative for website implementation, product
+documents, roadmap, and validation. Cross-repository sonder platform contracts,
+service/repository ownership boundaries, shared lifecycle semantics, and
+environment topology live in the `sonder-system` repository when that checkout
+is available. Do not copy those system documents here.
+
+The API's executable implementation remains authoritative for its behavior;
+`sonder-system` records only the facts shared across repositories. If website
+evidence conflicts with `sonder-system`, reconcile and record the mismatch
+explicitly rather than silently choosing one source.
+
 ## Website and API boundary
 
 The website owns public pages, account presentation, server-side WorkOS session

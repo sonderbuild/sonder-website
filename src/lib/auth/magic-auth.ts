@@ -4,24 +4,27 @@ export type MagicAuthClient = {
   createMagicAuth(input: {
     email: string;
     ipAddress?: string;
+    radarAuthAttemptId?: string;
     userAgent?: string;
-  }): Promise<unknown>;
+  }): Promise<{ radarAuthAttemptId?: string }>;
   authenticateWithMagicAuth(input: {
     clientId: string;
     email: string;
     code: string;
     ipAddress?: string;
+    radarAuthAttemptId?: string;
     userAgent?: string;
   }): Promise<AuthenticationResponse>;
 };
 
 type RequestContext = {
   ipAddress?: string;
+  radarAuthAttemptId?: string;
   userAgent?: string;
 };
 
 type MagicAuthRequestResult =
-  | { kind: "accepted" }
+  | { kind: "accepted"; radarAuthAttemptId?: string }
   | { kind: "invalidEmail" }
   | { kind: "rateLimited" }
   | { kind: "unavailable" };
@@ -59,8 +62,11 @@ export async function requestMagicAuth(
   if (!email) return { kind: "invalidEmail" };
 
   try {
-    await client.createMagicAuth({ email, ...context });
-    return { kind: "accepted" };
+    const response = await client.createMagicAuth({ email, ...context });
+    return {
+      kind: "accepted",
+      ...(response.radarAuthAttemptId ? { radarAuthAttemptId: response.radarAuthAttemptId } : {}),
+    };
   } catch (error) {
     return statusOf(error) === 429 ? { kind: "rateLimited" } : { kind: "unavailable" };
   }

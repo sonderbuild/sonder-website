@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     clientId,
     body.email,
     body.code,
-    requestContext(request),
+    requestContext(request, request.cookies.get("sonder-magic-radar")?.value),
   );
 
   if (result.kind === "authenticated") {
@@ -41,10 +41,21 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function requestContext(request: NextRequest) {
-  return { userAgent: request.headers.get("user-agent") ?? undefined };
+function requestContext(request: NextRequest, radarAuthAttemptId?: string) {
+  return {
+    ...(radarAuthAttemptId ? { radarAuthAttemptId } : {}),
+    userAgent: request.headers.get("user-agent") ?? undefined,
+  };
 }
 
 function response(body: object, status: number) {
-  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  const result = NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  result.cookies.set("sonder-magic-radar", "", {
+    httpOnly: true,
+    maxAge: 0,
+    path: "/api/auth/magic/verify",
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+  return result;
 }

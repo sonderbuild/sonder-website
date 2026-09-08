@@ -44,6 +44,24 @@ describe("custom Magic Auth", () => {
     await expect(requestMagicAuth(workos, "customer@example.com")).resolves.toEqual({ kind: "rateLimited" });
   });
 
+  it("preserves a WorkOS Radar attempt only for the corresponding code verification", async () => {
+    const workos = client({ createMagicAuth: vi.fn().mockResolvedValue({ radarAuthAttemptId: "radar_01" }) });
+
+    await expect(requestMagicAuth(workos, "customer@example.com")).resolves.toEqual({
+      kind: "accepted",
+      radarAuthAttemptId: "radar_01",
+    });
+    await expect(verifyMagicAuth(workos, "client_01", "customer@example.com", "123456", {
+      radarAuthAttemptId: "radar_01",
+    })).resolves.toMatchObject({ kind: "authenticated" });
+    expect(workos.authenticateWithMagicAuth).toHaveBeenCalledWith({
+      clientId: "client_01",
+      code: "123456",
+      email: "customer@example.com",
+      radarAuthAttemptId: "radar_01",
+    });
+  });
+
   it.each(["wrong", "expired"])("rejects a %s code without creating a session", async () => {
     const workos = client({ authenticateWithMagicAuth: vi.fn().mockRejectedValue({ status: 400 }) });
 

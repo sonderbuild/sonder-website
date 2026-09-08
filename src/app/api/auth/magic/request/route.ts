@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const result = await requestMagicAuth(getWorkOS().userManagement, body.email, requestContext(request));
   switch (result.kind) {
     case "accepted":
-      return response({ ok: true }, 202);
+      return response({ ok: true }, 202, result.radarAuthAttemptId);
     case "invalidEmail":
       return response({ error: "invalidEmail" }, 400);
     case "rateLimited":
@@ -29,6 +29,14 @@ function requestContext(request: NextRequest) {
   return { userAgent: request.headers.get("user-agent") ?? undefined };
 }
 
-function response(body: object, status: number) {
-  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+function response(body: object, status: number, radarAuthAttemptId?: string) {
+  const result = NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  result.cookies.set("sonder-magic-radar", radarAuthAttemptId ?? "", {
+    httpOnly: true,
+    maxAge: radarAuthAttemptId ? 600 : 0,
+    path: "/api/auth/magic/verify",
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+  return result;
 }

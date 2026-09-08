@@ -56,17 +56,21 @@ public response contracts.
 
 ## R6 — Customer identity and authentication
 
-**Implemented locally; staging verification pending credentials.** WorkOS
-Magic Auth is configured in source behind a custom `/login` UI that remains on
+**Verified in staging.** WorkOS Magic Auth runs behind a custom `/login` UI on
 the sonder domain, creates a server-managed sealed session, and preserves the
-Worker-side verified session boundary. Passwords and social providers remain
-disabled. Passkey UI is deferred because WorkOS currently supports passkeys only
-through hosted AuthKit, which R6 intentionally does not use. A forward migration
-adds provider-neutral identity links and makes an existing link immutable.
-Linking is limited to one verified WorkOS identity and one unambiguous
-Lemon-projected customer; unlinked, changed-email, disabled, invalid, and
-unverified cases fail closed. R6 adds no portal data, customer self-service,
-native-app OAuth, or licensing changes.
+Worker-side verified session boundary. The Worker requires native AuthKit's
+client-scoped issuer and JWKS for the configured client, RS256, expiry, subject,
+and `client_id`, without an `aud` requirement. Passwords and social providers
+remain disabled. Passkey UI is deferred because WorkOS currently supports
+passkeys only through hosted AuthKit, which R6 intentionally does not use. A
+forward migration adds provider-neutral identity links and makes an existing
+link immutable. Linking is limited to one verified WorkOS identity and one
+unambiguous Lemon-projected customer; unlinked, changed-email, disabled,
+invalid, and unverified cases fail closed. R6 adds no portal data, customer
+self-service, native-app OAuth, or licensing changes. Staging verified both
+the unknown-customer `identity.unlinked` path and the unambiguous
+Lemon-projected-customer `identity.linked` path; a repeat login produced no
+duplicate identity or material audit event.
 
 ## Production gates
 

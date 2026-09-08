@@ -1,6 +1,6 @@
 # ADR 003: Custom customer authentication with WorkOS AuthKit APIs
 
-**Status:** accepted and implemented in R6, pending staging verification
+**Status:** accepted, implemented, and verified in staging
 
 R6 selects WorkOS AuthKit for customer authentication, while keeping the
 normal sign-in experience on the sonder website. The custom `/login` UI asks
@@ -21,12 +21,14 @@ not fall back to `authkit.app`. This is a documented product limitation, not a
 reason to weaken the final UX boundary. Reassess it only when WorkOS provides a
 supported custom passkey API.
 
-The Worker independently verifies each bearer access token against WorkOS's
-JWKS using RS256, the configured issuer, expiry, and WorkOS client ID. WorkOS
-uses `client_id` rather than a standard `aud` claim in its documented token, so
-that claim is the configured audience check. The Worker then retrieves the
-provider user with its server-only WorkOS API key and accepts an identity only
-when the returned subject matches the JWT and `email_verified` is true.
+The Worker independently verifies each native AuthKit bearer token against
+`https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` using RS256. It requires
+the exact client-scoped issuer
+`https://api.workos.com/user_management/<WORKOS_CLIENT_ID>`, matching
+`client_id`, a non-empty subject, and expiry. The first-party token has no
+required `aud` claim. The Worker then retrieves the provider user with its
+server-only WorkOS API key and accepts an identity only when the returned
+subject matches the JWT and `email_verified` is true.
 
 The first verified lookup may link an internal, provider-neutral identity to an
 existing Lemon-projected customer using only a centrally normalized email hash.

@@ -174,9 +174,11 @@ redirect URI, or user directory for local or staging work.
    npx wrangler secret put WORKOS_CLIENT_ID --env staging
    ```
 
-   `WORKOS_AUTH_ISSUER=https://api.workos.com/` is a non-secret Worker variable.
-   If a WorkOS custom auth domain is introduced, update this exact staging value
-   and repeat issuer-rejection tests before deployment.
+   The Worker derives the exact native AuthKit issuer from `WORKOS_CLIENT_ID`:
+   `https://api.workos.com/user_management/<WORKOS_CLIENT_ID>`. It verifies
+   signatures against `https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` and
+   requires `client_id`, `sub`, and `exp`; it does not require `aud`. No custom
+   AuthKit domain is configured for R6.
 4. Apply `0006_customer_identities.sql` only to staging, deploy only
    `sonder-api-staging`, then deploy the protected staging website. Production
    remains untouched.
@@ -195,6 +197,14 @@ issuer, or wrong-client token is rejected by the staging Worker. Inspect only
 synthetic identity rows and sanitized audit actions, then disable or delete the
 synthetic fixture in the WorkOS test environment and staging D1.
 
-**Status:** custom Magic Auth UI implementation pending protected staging
-deployment and verification. This document must be updated with the actual
-deployment and verification result before R6 is marked complete in staging.
+**Status:** staging verification complete on 2026-09-09. The custom Magic Auth
+flow remained on `staging.sonder.build`; its server session authenticated the
+website-to-Worker request. The Worker accepted the client-scoped AuthKit issuer,
+performed the provider user lookup, and persisted one unlinked identity plus
+one `identity.unlinked` audit event. The recent audit window contained no
+commerce, entitlement, license, or activation event. A subsequent signed Lemon
+Test Mode `order_created` for that verified email created exactly one matching
+customer, purchase, and legitimate derived entitlement. The next authenticated
+lookup linked the same identity and appended one `identity.linked` audit event;
+a repeat login added neither an identity row nor a material identity audit
+event. No license or device activation was created by commerce or authentication.

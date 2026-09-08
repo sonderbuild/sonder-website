@@ -39,10 +39,15 @@ WorkOS supports them for the custom flow; do not turn a normal login into an
 ## Linking rule
 
 An authenticated provider subject is not itself a customer. The Worker verifies
-the signed WorkOS access token, retrieves the provider user with a Worker-only
-API key, and requires the provider's `email_verified` flag. It normalizes the
-verified email by trimming it and lowercasing only its domain—no Gmail aliases,
-dot removal, plus stripping, or other guessed provider semantics.
+the signed native AuthKit access token with RS256 against
+`https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` and requires the exact
+client-scoped issuer `https://api.workos.com/user_management/<WORKOS_CLIENT_ID>`,
+matching `client_id`, a non-empty subject, and expiry. It intentionally does
+not require `aud`, which is absent from this first-party session-token type.
+It then retrieves the provider user with a Worker-only API key and requires the
+provider's `email_verified` flag. It normalizes the verified email by trimming
+it and lowercasing only its domain—no Gmail aliases, dot removal, plus
+stripping, or other guessed provider semantics.
 
 The resulting SHA-256 value must identify exactly one existing
 Lemon-projected customer. A match creates or completes one `customer_identities`
@@ -53,6 +58,18 @@ email in a browser request are ignored because neither is accepted by the API.
 
 No account lookup changes purchases, entitlements, licenses, activation state,
 or Lemon data. R6 deliberately has no self-service claim/merge process.
+
+## Staging verification
+
+On 2026-09-09, a verified QA identity without a matching Lemon-projected
+customer persisted one `unlinked` identity and one `identity.unlinked` audit
+event, then failed closed. After a signed Lemon Test Mode `order_created` for
+the same verified email created exactly one matching customer, the next
+authenticated lookup transitioned that same identity to `linked` and appended
+one `identity.linked` audit event. A repeat login created neither an identity
+row nor another material identity audit event. The Lemon order legitimately
+created its purchase and derived entitlement; authentication itself created no
+entitlement, license, or device-activation state.
 
 ## Deferred native-app authorization
 

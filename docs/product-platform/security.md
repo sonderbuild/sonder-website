@@ -50,10 +50,14 @@
 - Never log an email address, one-time code, WorkOS response, access token, or
   refresh token from the custom authentication routes. Treat provider `429` and
   server errors as generic retryable responses.
-- The Worker validates every bearer JWT with WorkOS JWKS, RS256, exact issuer,
-  expiry, and configured client ID before reading any customer state. It obtains
-  verified email only from WorkOS's authenticated user endpoint, never a
-  browser payload.
+- The Worker validates every native AuthKit bearer JWT against
+  `https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` using RS256. It requires
+  the exact client-scoped issuer
+  `https://api.workos.com/user_management/<WORKOS_CLIENT_ID>`, expiry, a
+  non-empty subject, and matching `client_id` before reading customer state.
+  These first-party tokens have no required `aud` claim. There is no custom
+  AuthKit domain in R6. The Worker obtains verified email only from WorkOS's
+  authenticated user endpoint, never a browser payload.
 - Audit only material identity state changes: `identity.linked`,
   `identity.unlinked`, and `identity.link_failed`. Audit metadata contains a
   provider and sanitized reason only—never an email, access token, provider API

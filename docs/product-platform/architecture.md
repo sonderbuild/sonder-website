@@ -41,10 +41,13 @@ URL.
 
 The Vercel website sends a server-side WorkOS access token only to
 `GET /v1/customer/session`; browsers never choose a customer ID or forward a
-raw email for lookup. The Cloudflare Worker verifies WorkOS JWT signature,
-issuer, client audience, and expiry against WorkOS JWKS, then retrieves the
-verified WorkOS user using its own secret API key. Only that provider result can
-be used to resolve an internal customer identity.
+raw email for lookup. The Cloudflare Worker verifies the WorkOS JWT's RS256
+signature against the client-scoped WorkOS JWKS, exact
+`https://api.workos.com/user_management/<WORKOS_CLIENT_ID>` issuer, matching
+`client_id`, non-empty subject, and expiry. Native first-party AuthKit tokens
+have no required `aud` claim. It then retrieves the verified WorkOS user using
+its own secret API key. Only that provider result can be used to resolve an
+internal customer identity.
 
 The endpoint returns only the internal identity/customer relationship required
 by the website's authenticated placeholder. It intentionally returns no

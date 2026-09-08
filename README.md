@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is the public website and customer-account surface for [sonder](https://sonder.build), an independent software studio.
+
+The product-platform architecture, security baseline, and operations model are documented in [docs/product-platform](./docs/product-platform/README.md).
 
 ## Getting Started
 

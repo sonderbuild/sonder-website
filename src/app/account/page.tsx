@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { signOut, withAuth } from "@workos-inc/authkit-nextjs";
+import { withAuth } from "@workos-inc/authkit-nextjs";
 import { redirect } from "next/navigation";
 
 import { Container } from "@/components/ui/container";
+
+import { signOutAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Account",
@@ -23,11 +25,6 @@ export default async function AccountPage() {
       : "We could not confirm account access right now. Please try again shortly.";
 
   return <Container className="py-20 sm:py-28"><div className="grid gap-10 lg:grid-cols-12"><p className="eyebrow lg:col-span-3">Account</p><div className="lg:col-span-8 lg:col-start-5"><h1 className="display text-6xl leading-[0.94] sm:text-8xl">A place for your software.</h1><p className="type-body mt-8 max-w-xl text-lg leading-8 sm:text-xl">{message}</p><p className="type-body mt-5 text-sm opacity-70">Signed in as {user.email}</p><form action={signOutAction} className="mt-10"><button className="link" type="submit">Sign out</button></form></div></div></Container>;
-}
-
-async function signOutAction() {
-  "use server";
-  await signOut({ returnTo: "/" });
 }
 
 async function customerSession(accessToken: string): Promise<{ kind: "linked" | "unlinked" | "unavailable" }> {

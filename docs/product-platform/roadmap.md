@@ -57,14 +57,16 @@ public response contracts.
 ## R6 — Customer identity and authentication
 
 **Implemented locally; staging verification pending credentials.** WorkOS
-AuthKit is configured in source as passkey-first with Magic Auth fallback,
-server-managed website sessions, a minimal login/callback/sign-out/account
-surface, and a Worker-side verified session boundary. A forward migration adds
-provider-neutral identity links and makes an existing link immutable. Linking is
-limited to one verified WorkOS identity and one unambiguous Lemon-projected
-customer; unlinked, changed-email, disabled, invalid, and unverified cases fail
-closed. R6 adds no portal data, customer self-service, native-app OAuth, or
-licensing changes.
+Magic Auth is configured in source behind a custom `/login` UI that remains on
+the sonder domain, creates a server-managed sealed session, and preserves the
+Worker-side verified session boundary. Passwords and social providers remain
+disabled. Passkey UI is deferred because WorkOS currently supports passkeys only
+through hosted AuthKit, which R6 intentionally does not use. A forward migration
+adds provider-neutral identity links and makes an existing link immutable.
+Linking is limited to one verified WorkOS identity and one unambiguous
+Lemon-projected customer; unlinked, changed-email, disabled, invalid, and
+unverified cases fail closed. R6 adds no portal data, customer self-service,
+native-app OAuth, or licensing changes.
 
 ## Production gates
 

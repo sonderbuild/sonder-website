@@ -1,13 +1,25 @@
-# ADR 003: Managed customer authentication with WorkOS AuthKit
+# ADR 003: Custom customer authentication with WorkOS AuthKit APIs
 
 **Status:** accepted and implemented in R6, pending staging verification
 
-R6 selects WorkOS AuthKit for customer authentication. Its hosted UI is
-configured passkey-first with Magic Auth (verified email code) as the fallback;
-password authentication is disabled. The website uses WorkOS's maintained Next
-SDK for PKCE, callback state/nonce handling, sealed secure cookies, session
-refresh, and sign-out. sonder does not store passwords, recovery factors, or
-browser tokens.
+R6 selects WorkOS AuthKit for customer authentication, while keeping the
+normal sign-in experience on the sonder website. The custom `/login` UI asks
+WorkOS to send and verify a Magic Auth six-digit verified-email code using the
+server-only API key. It then uses WorkOS's maintained Next SDK to save a sealed
+secure cookie, refresh the session, and sign out. sonder does not store
+passwords, recovery factors, or browser tokens.
+
+The custom API is intentionally preferred over a hosted AuthKit redirect or
+iframe. Each mutation is same-origin and protected by a short-lived
+double-submit CSRF value. The API secret remains server-side, code failures are
+generic, and a response without `email_verified` never creates a website
+session. Password and social methods remain disabled.
+
+WorkOS currently exposes passkeys only through hosted AuthKit UI. R6 therefore
+does not expose passkey sign-in or enrollment in the custom interface and does
+not fall back to `authkit.app`. This is a documented product limitation, not a
+reason to weaken the final UX boundary. Reassess it only when WorkOS provides a
+supported custom passkey API.
 
 The Worker independently verifies each bearer access token against WorkOS's
 JWKS using RS256, the configured issuer, expiry, and WorkOS client ID. WorkOS

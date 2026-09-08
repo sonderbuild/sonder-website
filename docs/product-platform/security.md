@@ -35,14 +35,21 @@
 
 ## Customer sessions and identity links
 
-- Configure WorkOS AuthKit with passkeys and Magic Auth only; do not enable
-  passwords. Use a WorkOS test environment and a staging-only application until
-  production readiness is approved.
+- Configure the custom R6 UI with Magic Auth only. Do not enable passwords or
+  social providers. WorkOS currently offers passkeys only through hosted UI, so
+  do not add a passkey redirect or enrollment control until its custom API
+  supports it. Use a WorkOS test environment and a staging-only application
+  until production readiness is approved.
 - Keep `WORKOS_API_KEY` and `WORKOS_COOKIE_PASSWORD` server-only. The WorkOS
-  client ID and redirect URI are configuration, but remain environment-scoped.
-  Generate a unique cookie password of at least 32 random characters per
-  environment; use Secure, HttpOnly, `SameSite=Lax` cookies and a short
-  configured session lifetime appropriate for a customer account.
+  client ID and compatibility redirect URI are configuration, but remain
+  environment-scoped. Generate a unique cookie password of at least 32 random
+  characters per environment; use Secure, HttpOnly, `SameSite=Lax` session
+  cookies and a short configured session lifetime appropriate for a customer
+  account. Magic Auth mutations additionally require a short-lived HttpOnly,
+  `SameSite=Strict` CSRF cookie, matching header, and exact same-origin request.
+- Never log an email address, one-time code, WorkOS response, access token, or
+  refresh token from the custom authentication routes. Treat provider `429` and
+  server errors as generic retryable responses.
 - The Worker validates every bearer JWT with WorkOS JWKS, RS256, exact issuer,
   expiry, and configured client ID before reading any customer state. It obtains
   verified email only from WorkOS's authenticated user endpoint, never a

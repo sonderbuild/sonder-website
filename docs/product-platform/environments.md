@@ -156,12 +156,14 @@ redirect URI, or user directory for local or staging work.
 
 ### Staging configuration
 
-1. In the WorkOS test environment, enable **Passkeys** and **Magic Auth** and
-   disable password authentication. Add the protected staging URL's `/login` as
-   the Sign-in URL and `/callback` as an allowed redirect URI.
+1. In the WorkOS test environment, enable **Magic Auth** and disable password
+   and social authentication. Do not add passkey controls to the R6 custom UI:
+   WorkOS currently supports passkeys only through hosted UI. Add
+   `https://staging.sonder.build/login` as both the Sign-in URL and the
+   compatibility redirect URI required by the AuthKit Next session proxy.
 2. In Vercel's staging environment, set `WORKOS_CLIENT_ID`,
    `WORKOS_API_KEY`, a unique 32+-character `WORKOS_COOKIE_PASSWORD`,
-   `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://<staging-host>/callback`, and the
+   `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://staging.sonder.build/login`, and the
    server-only `SONDER_API_ORIGIN=https://sonder-api-staging.sonderbuild.workers.dev`.
    No Worker, Lemon, or signing private key belongs in Vercel.
 3. In the API repository, set the staging-only values interactively—never as
@@ -181,15 +183,18 @@ redirect URI, or user directory for local or staging work.
 
 ### Required staging verification record
 
-Record completion only after exercising a WorkOS test user through a passkey
-and the Magic Auth fallback. Verify the callback creates a Secure, HttpOnly
-server session; the website's server-side lookup links only a synthetic
-Lemon-projected customer with the same verified email; a different verified
-email returns the unlinked state; and an invalid, expired, wrong-issuer, or
-wrong-client token is rejected by the staging Worker. Inspect only synthetic
-identity rows and sanitized audit actions, then disable or delete the synthetic
-fixture in the WorkOS test environment and staging D1.
+Record completion only after exercising a WorkOS test user through the custom
+Magic Auth flow. Confirm that `/login` remains on `staging.sonder.build` while
+requesting and verifying the code, that successful verification creates a
+Secure, HttpOnly server session, and that sign-out remains functional. Passkeys
+are not a staging test for this custom flow until WorkOS supports a custom
+passkey API. Then verify the website's server-side lookup links only a
+synthetic Lemon-projected customer with the same verified email; a different
+verified email returns the unlinked state; and an invalid, expired, wrong-
+issuer, or wrong-client token is rejected by the staging Worker. Inspect only
+synthetic identity rows and sanitized audit actions, then disable or delete the
+synthetic fixture in the WorkOS test environment and staging D1.
 
-**Status:** pending WorkOS test-environment credentials and protected staging
-website configuration. This document must be updated with the actual deployment
-and verification result before R6 is marked complete in staging.
+**Status:** custom Magic Auth UI implementation pending protected staging
+deployment and verification. This document must be updated with the actual
+deployment and verification result before R6 is marked complete in staging.

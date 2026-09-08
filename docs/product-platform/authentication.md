@@ -2,21 +2,37 @@
 
 ## R6 decision
 
-Customer authentication uses WorkOS AuthKit, with passkeys enabled as the
-primary method and Magic Auth's verified email code as the fallback. Password
-authentication is disabled in the WorkOS application. The minimal website
-surface is `/login`, `/callback`, sign-out, and `/account`; it is an
-authenticated identity diagnostic, not a product portal.
+Customer authentication uses WorkOS AuthKit's supported server APIs behind a
+custom sonder interface. `/login` stays on the sonder website and uses Magic
+Auth's six-digit verified email code. Password and social authentication are
+disabled. The minimal website surface is `/login`, sign-out, and `/account`; it
+is an authenticated identity diagnostic, not a product portal.
 
-The Next.js server owns the WorkOS session. The AuthKit SDK manages PKCE,
-callback state/nonce validation, sealed HttpOnly secure cookies, token refresh,
-and sign-out. Access and refresh tokens never enter local storage, client-side
-JavaScript state, telemetry, or a URL.
+The Next.js server requests and verifies the code with the WorkOS API key and
+client ID, then uses the AuthKit SDK's `saveSession` helper to write its sealed
+HttpOnly secure session cookie. Access and refresh tokens never enter local
+storage, client-side JavaScript state, telemetry, or a URL. The existing
+AuthKit proxy continues to verify and refresh that server session before the
+website calls the Worker.
+
+The browser requests a short-lived CSRF value from the same origin. Every
+Magic Auth mutation requires both that HttpOnly cookie and matching request
+header, a matching `Origin`, JSON content, and a small request body. The UI
+does not reveal whether an email has an existing customer record. WorkOS
+enforces its provider-level abuse controls; an upstream `429` is returned as a
+generic retryable result without logging the email or code.
+
+WorkOS currently supports passkey authentication only through its hosted UI,
+not its supported custom authentication API. R6 therefore does not offer a
+passkey control, enrollment, or hosted-UI fallback. Revisit passkeys only when
+WorkOS supports them for the custom flow; do not turn a normal login into an
+`authkit.app` redirect to work around that limitation.
 
 ## Rejected for the first implementation
 
 - Passwords managed by sonder or enabled in WorkOS.
 - Social-only login.
+- Hosted AuthKit UI, iframe, or redirect for ordinary website login.
 - Account creation based solely on possession of a license key.
 - Organizations, teams, roles, avatars, or public profiles.
 

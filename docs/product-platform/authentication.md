@@ -9,7 +9,10 @@ enables Google and Apple in the separate staging environment; Apple uses
 WorkOS default credentials there only. Passwords and every other social
 provider remain disabled. The minimal website surface is `/login`, sign-out,
 and `/account`; it is an authenticated identity diagnostic, not a product
-portal.
+portal. The account page calls the Worker server-side and preserves its explicit
+unlinked, disabled, and verification-required states. It does not treat every
+denied response as an unlinked customer or render customer data for a denied
+state.
 
 The Next.js server requests and verifies the code with the WorkOS API key and
 client ID, then uses the AuthKit SDK's `saveSession` helper to write its sealed

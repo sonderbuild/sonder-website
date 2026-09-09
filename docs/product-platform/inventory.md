@@ -8,8 +8,9 @@ that every remote dashboard setting has been verified.
 - Next.js 16.3 application, deployed through Vercel.
 - Marketing routes exist for sonder, apps, individual products, creative work,
   about, and contact.
-- `/account` is an intentional static placeholder. It has no authentication,
-  commerce, entitlement, or download logic.
+- `/account` is a server-rendered authenticated identity diagnostic. It consumes
+  only the server-side customer-session relationship contract and has no
+  commerce, entitlement, license, activation, or download logic.
 - No Vercel configuration, server routes, database client, payment SDK, or
   tracked environment-variable file currently exists in this repository.
 

@@ -8,7 +8,7 @@ import { signOutAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Account",
-  description: "Your sonder account, licenses, and downloads.",
+  description: "Your sonder account.",
 };
 
 export default async function AccountPage() {
@@ -18,16 +18,26 @@ export default async function AccountPage() {
   }
 
   const session = await customerSession(accessToken);
-  const message = session.kind === "linked"
-    ? "Your identity is securely connected. Products, licenses, and activation controls will arrive in a later milestone."
-    : session.kind === "unlinked"
-      ? "This verified email is not yet connected to a purchase. No products or licenses have been changed."
-      : "We could not confirm account access right now. Please try again shortly.";
+  if (session.kind === "unauthenticated") {
+    redirect("/login");
+  }
 
-  return <Container className="py-20 sm:py-28"><div className="grid gap-10 lg:grid-cols-12"><p className="eyebrow lg:col-span-3">Account</p><div className="lg:col-span-8 lg:col-start-5"><h1 className="display text-6xl leading-[0.94] sm:text-8xl">A place for your software.</h1><p className="type-body mt-8 max-w-xl text-lg leading-8 sm:text-xl">{message}</p><p className="type-body mt-5 text-sm opacity-70">Signed in as {user.email}</p><form action={signOutAction} className="mt-10"><button className="link" type="submit">Sign out</button></form></div></div></Container>;
+  const message = session.kind === "linked"
+    ? "Your customer account is connected."
+    : session.kind === "unlinked"
+      ? "You’re signed in, but no sonder customer account is connected to this identity."
+      : session.kind === "disabled"
+        ? "This customer account is currently unavailable."
+        : session.kind === "verificationRequired"
+          ? "A verified email is required before we can show your account."
+          : "We could not confirm account access right now. Please try again shortly.";
+
+  return <Container className="py-20 sm:py-28"><div className="grid gap-10 lg:grid-cols-12"><p className="eyebrow lg:col-span-3">Account</p><div className="lg:col-span-8 lg:col-start-5"><h1 className="display text-6xl leading-[0.94] sm:text-8xl">Your sonder account.</h1><p className="type-body mt-8 max-w-xl text-lg leading-8 sm:text-xl">{message}</p><form action={signOutAction} className="mt-10"><button className="link" type="submit">Sign out</button></form></div></div></Container>;
 }
 
-async function customerSession(accessToken: string): Promise<{ kind: "linked" | "unlinked" | "unavailable" }> {
+type CustomerSession = { kind: "linked" | "unlinked" | "disabled" | "verificationRequired" | "unauthenticated" | "unavailable" };
+
+async function customerSession(accessToken: string): Promise<CustomerSession> {
   const apiOrigin = process.env.SONDER_API_ORIGIN;
   if (!apiOrigin) {
     return { kind: "unavailable" };
@@ -48,8 +58,37 @@ async function customerSession(accessToken: string): Promise<{ kind: "linked" | 
       cache: "no-store",
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    return response.ok ? { kind: "linked" } : response.status === 403 ? { kind: "unlinked" } : { kind: "unavailable" };
+    const body: unknown = await response.json().catch(() => null);
+    if (response.status === 200 && isLinkedSession(body)) {
+      return { kind: "linked" };
+    }
+    if (response.status === 401 && hasError(body, "unauthenticated")) {
+      return { kind: "unauthenticated" };
+    }
+    if (response.status === 403 && hasError(body, "accountUnlinked")) {
+      return { kind: "unlinked" };
+    }
+    if (response.status === 403 && hasError(body, "accountDisabled")) {
+      return { kind: "disabled" };
+    }
+    if (response.status === 403 && hasError(body, "emailNotVerified")) {
+      return { kind: "verificationRequired" };
+    }
+    return { kind: "unavailable" };
   } catch {
     return { kind: "unavailable" };
   }
+}
+
+function isLinkedSession(value: unknown): value is { identityId: string; customerId: string } {
+  return typeof value === "object" && value !== null
+    && Object.keys(value).length === 2
+    && typeof (value as Record<string, unknown>).identityId === "string"
+    && typeof (value as Record<string, unknown>).customerId === "string";
+}
+
+function hasError(value: unknown, error: string): boolean {
+  return typeof value === "object" && value !== null
+    && Object.keys(value).length === 1
+    && (value as Record<string, unknown>).error === error;
 }

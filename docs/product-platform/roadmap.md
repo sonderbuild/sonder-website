@@ -84,7 +84,23 @@ idempotent, and Magic Auth plus sign-out still worked. Sanitized staging
 aggregates showed no authentication-created entitlement, license, or activation
 state. Final Apple inspection recorded only privacy-safe global inventory
 counts, which are not a causal before/after commercial-state record; the
-authentication path has no commercial mutation. No R7 scope is started.
+authentication path has no commercial mutation.
+
+## R7 — Read-only customer account
+
+**Deployed to staging; credentialed state verification pending.** The account
+page consumes only the shared customer-session relationship contract through a
+server-side, no-store request. It presents linked, unlinked, disabled,
+email-not-verified, unauthenticated, and unavailable states without exposing
+identity/customer IDs, customer email, provider data, or commercial state. No
+entitlement, license, activation, device, purchase, billing, download, or
+profile feature is part of R7. The Worker and Vercel staging deployments are
+ready; the signed-out account redirect and `Sign in` header state are verified.
+The Google control reaches its WorkOS provider flow, and deterministic API
+tests verify disabled/email-not-verified outcomes without unsafe staging state
+fabrication. Existing linked/unlinked QA credentials remain required to complete
+Magic Auth, Google, signed-in header-transition, logout, and post-window
+commercial-mutation checks.
 
 ## Production gates
 

@@ -251,3 +251,19 @@ audits; four entitlements, two licenses, and six activations. Those global
 counts are not a before/after attribution record. The website authentication
 routes have no commercial mutation path, and no production WorkOS, Vercel,
 Cloudflare, DNS, data, or deployment changed.
+
+## R7 read-only account staging deployment
+
+On 2026-09-09, `sonder-api-staging` deployed the established
+customer-session cache policy and returned the unauthenticated contract response
+with `Cache-Control: private, no-store`. The protected Vercel staging deployment
+of the account consumer built successfully. A deployment-protected signed-out
+`/account` request redirected to `/login` and showed the shared `Sign in`
+header. The live Google control reached Google's account selection through
+WorkOS, but no QA account was selected. Deterministic API integration tests
+verify `accountDisabled` and `emailNotVerified`, avoiding unnecessary mutation
+of staging WorkOS/identity state. Two read-only D1 aggregate snapshots agreed
+at 2 purchases, 4 entitlements, 2 licenses, and 6 activations; both reads had
+zero writes. Linked/unlinked completed login, Magic Auth, signed-in header,
+sign-out, and post-logout checks remain pending protected QA credentials. This
+deployment made no production change.

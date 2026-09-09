@@ -13,7 +13,12 @@ The custom API is intentionally preferred over a hosted AuthKit redirect or
 iframe. Each mutation is same-origin and protected by a short-lived
 double-submit CSRF value. The API secret remains server-side, code failures are
 generic, and a response without `email_verified` never creates a website
-session. Password and social methods remain disabled.
+session. Passwords remain disabled. R6.2 adds Google only in staging via
+WorkOS's custom Authentication API: the user sees a Sonder-owned button,
+authorizes with Google, and returns to a Sonder callback that exchanges the code
+server-side. The user does not visit hosted AuthKit UI. Apple uses the same
+provider-neutral code path but remains disabled and invisible until paid Apple
+Developer Program access and its WorkOS configuration are available.
 
 WorkOS currently exposes passkeys only through hosted AuthKit UI. R6 therefore
 does not expose passkey sign-in or enrollment in the custom interface and does
@@ -34,8 +39,10 @@ The first verified lookup may link an internal, provider-neutral identity to an
 existing Lemon-projected customer using only a centrally normalized email hash.
 No matching customer creates no customer, entitlement, license, or activation;
 the identity stays unlinked and access fails closed. A linked provider subject
-is immutable at the database layer, so a changed email never silently moves it
-to another customer. Any correction is an explicit future support operation.
+is immutable at the database layer, and a partial unique customer index prevents
+a customer from acquiring a second WorkOS subject. A changed email, Apple relay
+address, or unexpected second WorkOS subject never silently merges customer
+access. Any correction is an explicit future support operation.
 
 This decision does not add account product data, native-app authorization,
 account claims, or a customer portal.

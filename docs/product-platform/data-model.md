@@ -10,7 +10,7 @@ product-specific data stays in its own product repository and storage.
 | `products` | `id`, `slug`, `provider`, `provider_product_id`, `status` | Canonical product definition, such as `pulse`, with an optional commercial reference. |
 | `product_variants` | `id`, `product_id`, `lemon_variant_id`, `policy` | Maps commercial variants to entitlement policy. |
 | `customers` | `id`, `auth_subject`, `primary_email_hash`, provider reference | Minimal customer identity; email is hashed, not retained as raw webhook data. |
-| `customer_identities` | `id`, `provider`, `provider_subject`, `verified_email`, `customer_id`, `status` | Provider-neutral login identity; a verified email is retained only for identity linking and may be linked, unlinked, or disabled. |
+| `customer_identities` | `id`, `provider`, `provider_subject`, `verified_email`, `customer_id`, `status` | Provider-neutral WorkOS identity; a verified email is retained only for identity linking and may be linked, unlinked, or disabled. A partial unique index allows at most one non-null customer assignment. |
 | `purchases` | `id`, `provider`, `provider_order_id`, `product_variant_id`, `status`, `provider_updated_at` | Commercial order reference, entitlement identity, and freshness marker without payment detail. |
 | `licenses` | `id`, `entitlement_id`, `credential_verifier`, `activation_limit`, `status`, `revoked_at` | Opaque license lifecycle; only a SHA-256 verifier of the bootstrap credential is retained. |
 | `entitlements` | `id`, `customer_id`, `product_variant_id`, `status` | The customer’s actual right to use a product. |

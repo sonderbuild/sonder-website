@@ -5,7 +5,7 @@
     "vitest",
     "next-production-build",
     "local-browser-smoke",
-    "workos-magic-auth-staging",
+    "workos-auth-staging",
     "website-api-account-session-staging",
     "api-owned-commerce-email-staging",
     "production-release-validation"
@@ -27,9 +27,9 @@
       "mode": "manual",
       "instructions": "Run pnpm dev and manually inspect affected public routes. A local login form or account placeholder is not WorkOS, API, staging, or production evidence; do not use customer data or production credentials locally."
     },
-    "workos-magic-auth-staging": {
+    "workos-auth-staging": {
       "mode": "manual",
-      "instructions": "Use the protected staging Vercel deployment with the separate WorkOS test environment. Exercise Magic Auth request, invalid/expired code, rate limit, sign-out, and verified-email behavior without logging an email or code. Password, social, hosted AuthKit, and passkey flows are intentionally out of scope."
+      "instructions": "Use the protected staging Vercel deployment with the separate WorkOS test environment. Exercise Magic Auth request, invalid/expired code, rate limit, sign-out, and verified-email behavior without logging an email or code. Then exercise Google authorization, cancellation, invalid callback state, same-WorkOS-subject idempotency, and verified-email behavior. Passwords, Apple until explicitly configured, hosted AuthKit UI, and passkeys are intentionally out of scope."
     },
     "website-api-account-session-staging": {
       "mode": "manual",

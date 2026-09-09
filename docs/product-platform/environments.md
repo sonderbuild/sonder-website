@@ -156,15 +156,22 @@ redirect URI, or user directory for local or staging work.
 
 ### Staging configuration
 
-1. In the WorkOS test environment, enable **Magic Auth** and disable password
-   and social authentication. Do not add passkey controls to the R6 custom UI:
-   WorkOS currently supports passkeys only through hosted UI. Add
+1. In the WorkOS test environment, enable **Magic Auth** and **Google OAuth**.
+   Disable passwords, Apple OAuth, and every other social provider. Do not add
+   passkey controls to the R6 custom UI: WorkOS currently supports passkeys only
+   through hosted UI. Add
    `https://staging.sonder.build/login` as both the Sign-in URL and the
-   compatibility redirect URI required by the AuthKit Next session proxy.
+   compatibility redirect URI required by the AuthKit Next session proxy, and
+   add `https://staging.sonder.build/api/auth/social/callback` to the WorkOS
+   application's allowed Redirects. In Google Cloud, register the separate
+   WorkOS-provided Google redirect URI, then store the Google client ID and
+   secret only in the WorkOS test provider configuration.
 2. In Vercel's staging environment, set `WORKOS_CLIENT_ID`,
    `WORKOS_API_KEY`, a unique 32+-character `WORKOS_COOKIE_PASSWORD`,
    `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://staging.sonder.build/login`, and the
-   server-only `SONDER_API_ORIGIN=https://sonder-api-staging.sonderbuild.workers.dev`.
+   server-only `SONDER_API_ORIGIN=https://sonder-api-staging.sonderbuild.workers.dev`,
+   `WORKOS_SOCIAL_PROVIDERS=google`, and
+   `WORKOS_SOCIAL_REDIRECT_URI=https://staging.sonder.build/api/auth/social/callback`.
    No Worker, Lemon, or signing private key belongs in Vercel.
 3. In the API repository, set the staging-only values interactively—never as
    command arguments:
@@ -208,3 +215,17 @@ customer, purchase, and legitimate derived entitlement. The next authenticated
 lookup linked the same identity and appended one `identity.linked` audit event;
 a repeat login added neither an identity row nor a material identity audit
 event. No license or device activation was created by commerce or authentication.
+
+### R6.2 Google staging verification
+
+Apply `0007_customer_identity_customer_unique.sql` only to staging before
+deploying the R6.2 Worker. Deploy the staging website only after the WorkOS test
+application allowlists the Google callback and Vercel has the two social
+configuration values above. Verify Google authorization returns to
+`staging.sonder.build`, creates the existing sealed session, reaches `/account`,
+and signs out. Exercise cancellation and invalid callback state. Verify a Google
+login resolving to the same WorkOS subject as Magic Auth remains idempotent; an
+unknown or second subject remains unlinked. Inspect only sanitized identity
+state/audit actions and confirm no purchase, entitlement, license, or activation
+row is created by authentication. Apple remains deferred: do not set Apple
+credentials, enable its provider, or set `apple` in `WORKOS_SOCIAL_PROVIDERS`.

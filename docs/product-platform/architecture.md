@@ -39,7 +39,11 @@ URL.
 
 ## R6 customer authentication boundary
 
-The Vercel website sends a server-side WorkOS access token only to
+The Vercel website starts Magic Auth through same-origin server APIs. It starts
+an allowlisted social provider through WorkOS's authorization endpoint using a
+short-lived HttpOnly state cookie, then exchanges the callback code server-side
+before it creates the same sealed session. The Vercel website sends a
+server-side WorkOS access token only to
 `GET /v1/customer/session`; browsers never choose a customer ID or forward a
 raw email for lookup. The Cloudflare Worker verifies the WorkOS JWT's RS256
 signature against the client-scoped WorkOS JWKS, exact
@@ -47,7 +51,9 @@ signature against the client-scoped WorkOS JWKS, exact
 `client_id`, non-empty subject, and expiry. Native first-party AuthKit tokens
 have no required `aud` claim. It then retrieves the verified WorkOS user using
 its own secret API key. Only that provider result can be used to resolve an
-internal customer identity.
+internal customer identity. D1 permits only one linked WorkOS subject for each
+customer, so an unexpected second provider subject fails closed rather than
+silently merging customer access.
 
 The endpoint returns only the internal identity/customer relationship required
 by the website's authenticated placeholder. It intentionally returns no

@@ -35,11 +35,13 @@
 
 ## Customer sessions and identity links
 
-- Configure the custom R6 UI with Magic Auth only. Do not enable passwords or
-  social providers. WorkOS currently offers passkeys only through hosted UI, so
-  do not add a passkey redirect or enrollment control until its custom API
-  supports it. Use a WorkOS test environment and a staging-only application
-  until production readiness is approved.
+- Configure the custom R6.2 UI with Magic Auth and only the explicitly
+  allowlisted Google provider in staging. Keep passwords, Apple, and every
+  other social provider disabled until separately approved and configured.
+  WorkOS currently offers passkeys only through hosted UI, so do not add a
+  passkey redirect or enrollment control until its custom API supports it. Use
+  a WorkOS test environment and a staging-only application until production
+  readiness is approved.
 - Keep `WORKOS_API_KEY` and `WORKOS_COOKIE_PASSWORD` server-only. The WorkOS
   client ID and compatibility redirect URI are configuration, but remain
   environment-scoped. Generate a unique cookie password of at least 32 random
@@ -50,6 +52,10 @@
 - Never log an email address, one-time code, WorkOS response, access token, or
   refresh token from the custom authentication routes. Treat provider `429` and
   server errors as generic retryable responses.
+- Social start is a same-origin CSRF-protected POST. Its opaque state is held
+  only in a ten-minute, Secure, HttpOnly, `SameSite=Lax` callback cookie; the
+  callback consumes it before the server-side WorkOS authorization-code
+  exchange. Reject missing, mismatched, unsupported, or disabled providers.
 - The Worker validates every native AuthKit bearer JWT against
   `https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` using RS256. It requires
   the exact client-scoped issuer
@@ -63,8 +69,10 @@
   provider and sanitized reason only—never an email, access token, provider API
   response, or customer request body.
 - Disabled and unlinked identities fail closed. A provider subject may not be
-  reassigned automatically between customers; operational correction requires a
-  reviewed support procedure outside R6.
+  reassigned automatically between customers, and a customer may not acquire a
+  second WorkOS subject. D1 enforces the latter with a partial unique index on
+  non-null `customer_id`. Operational correction requires a reviewed support
+  procedure outside R6.
 
 ## Licensing keys and proofs
 

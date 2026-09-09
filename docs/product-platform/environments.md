@@ -218,14 +218,18 @@ event. No license or device activation was created by commerce or authentication
 
 ### R6.2 Google staging verification
 
-Apply `0007_customer_identity_customer_unique.sql` only to staging before
-deploying the R6.2 Worker. Deploy the staging website only after the WorkOS test
-application allowlists the Google callback and Vercel has the two social
-configuration values above. Verify Google authorization returns to
-`staging.sonder.build`, creates the existing sealed session, reaches `/account`,
-and signs out. Exercise cancellation and invalid callback state. Verify a Google
-login resolving to the same WorkOS subject as Magic Auth remains idempotent; an
-unknown or second subject remains unlinked. Inspect only sanitized identity
-state/audit actions and confirm no purchase, entitlement, license, or activation
-row is created by authentication. Apple remains deferred: do not set Apple
-credentials, enable its provider, or set `apple` in `WORKOS_SOCIAL_PROVIDERS`.
+**Status:** staging verification complete on 2026-09-09. The branch Preview
+showed Google only; Apple was neither visible nor configured. After the WorkOS
+test application allowlisted the Sonder social callback, Google authorization
+went through WorkOS to Google and the completed user flow returned to
+`/account`. Magic Auth and sign-out were also rerun successfully on the same
+Preview. Sanitized D1 aggregates for the existing QA customer showed exactly
+one matching customer, one linked identity, and one `identity.linked` audit
+event. Its one purchase and one entitlement were the pre-existing Lemon Test
+Mode commerce projection; it had zero licenses and zero device activations.
+The same-subject Google login therefore added no identity, audit, entitlement,
+license, or activation row. Automated R6.2 coverage exercises cancellation,
+invalid state, disabled-provider rejection, unknown identity, and second-subject
+collision; those negative paths remain fail-closed. Apple remains deferred: do
+not set Apple credentials, enable its provider, or set `apple` in
+`WORKOS_SOCIAL_PROVIDERS`.

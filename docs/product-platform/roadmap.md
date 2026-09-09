@@ -56,7 +56,7 @@ public response contracts.
 
 ## R6 — Customer identity and authentication
 
-**R6 complete; R6.2 in progress.** WorkOS Magic Auth runs behind a custom `/login` UI on
+**R6 and R6.2 staging verified.** WorkOS Magic Auth runs behind a custom `/login` UI on
 the sonder domain, creates a server-managed sealed session, and preserves the
 Worker-side verified session boundary. The Worker requires native AuthKit's
 client-scoped issuer and JWKS for the configured client, RS256, expiry, subject,
@@ -73,8 +73,11 @@ self-service, native-app OAuth, or licensing changes. Staging verified both
 the unknown-customer `identity.unlinked` path and the unambiguous
 Lemon-projected-customer `identity.linked` path; a repeat login produced no
 duplicate identity or material audit event. R6.2 adds a D1-enforced inverse
-identity constraint: one customer may have only one linked WorkOS subject. It
-still requires Google staging end-to-end verification; no R7 scope is started.
+identity constraint: one customer may have only one linked WorkOS subject.
+Google staging sign-in returned to `/account`, its same-subject path remained
+idempotent, and Magic Auth plus sign-out still worked. Sanitized staging
+aggregates showed no authentication-created entitlement, license, or activation
+state. Apple remains deferred and no R7 scope is started.
 
 ## Production gates
 

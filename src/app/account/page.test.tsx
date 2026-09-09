@@ -39,14 +39,30 @@ describe("account session boundary", () => {
     await expect(AccountPage()).rejects.toThrow("redirect:/login");
   });
 
+  it("redirects to login when ownership reports an expired API authentication state", async () => {
+    mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 401, body: { error: "unauthenticated" } },
+    );
+
+    await expect(AccountPage()).rejects.toThrow("redirect:/login");
+  });
+
   it("renders the linked state only for the stable linked response shape", async () => {
-    const fetchMock = mockAuthenticatedAccount({ status: 200, body: { identityId: "identity-id", customerId: "customer-id" } });
+    const fetchMock = mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 200, body: { products: [{ productId: "pulse", name: "Pulse", entitlement: { status: "active" } }] } },
+    );
 
     const account = await renderAccount();
     expect(account).toContain("Your customer account is connected.");
+    expect(account).toContain("Your products");
+    expect(account).toContain("Pulse");
+    expect(account).toContain("Active");
     expect(account).not.toContain("identity-id");
     expect(account).not.toContain("customer-id");
     expect(fetchMock).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({ cache: "no-store", headers: { Authorization: "Bearer access-token" } }));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("renders an explicit unlinked state without leaking account data", async () => {
@@ -87,6 +103,18 @@ describe("account session boundary", () => {
     expect(account).not.toContain("person@example.com");
   });
 
+  it("does not render product data when the ownership response is malformed or unavailable", async () => {
+    mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 503, body: { error: "ownershipUnavailable" } },
+    );
+
+    const account = await renderAccount();
+    expect(account).toContain("could not load your products");
+    expect(account).not.toContain("identity-id");
+    expect(account).not.toContain("customer-id");
+  });
+
   it("uses the existing WorkOS server-side sign-out operation", async () => {
     mocks.signOut.mockResolvedValue(undefined);
 
@@ -99,10 +127,11 @@ async function renderAccount() {
   return renderToStaticMarkup(await AccountPage());
 }
 
-function mockAuthenticatedAccount(response: { status: number; body: unknown }) {
+function mockAuthenticatedAccount(...responses: Array<{ status: number; body: unknown }>) {
   mocks.withAuth.mockResolvedValue({ accessToken: "access-token", user: { email: "person@example.com", id: "user-id" } });
   vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
-  const fetchMock = vi.fn().mockResolvedValue(Response.json(response.body, { status: response.status }));
+  const fetchMock = vi.fn();
+  for (const response of responses) fetchMock.mockResolvedValueOnce(Response.json(response.body, { status: response.status }));
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }

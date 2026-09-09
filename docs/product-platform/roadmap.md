@@ -88,19 +88,39 @@ authentication path has no commercial mutation.
 
 ## R7 — Read-only customer account
 
-**Deployed to staging; credentialed state verification pending.** The account
-page consumes only the shared customer-session relationship contract through a
+**Staging acceptance complete; production untouched.** The account page
+consumes only the shared customer-session relationship contract through a
 server-side, no-store request. It presents linked, unlinked, disabled,
 email-not-verified, unauthenticated, and unavailable states without exposing
 identity/customer IDs, customer email, provider data, or commercial state. No
 entitlement, license, activation, device, purchase, billing, download, or
-profile feature is part of R7. The Worker and Vercel staging deployments are
-ready; the signed-out account redirect and `Sign in` header state are verified.
-The Google control reaches its WorkOS provider flow, and deterministic API
-tests verify disabled/email-not-verified outcomes without unsafe staging state
-fabrication. Existing linked/unlinked QA credentials remain required to complete
-Magic Auth, Google, signed-in header-transition, logout, and post-window
-commercial-mutation checks.
+profile feature is part of R7. The accepted target is the Ready Git Preview for
+staging commit `6225ef41bd461fcd26919967e76069de3fa5b9a6`, which is also the
+`staging.sonder.build` domain target. Linked Magic Auth and unlinked Google QA
+sessions rendered their distinct states; the header transitioned correctly
+through sign-out and signed-out `/account` redirected to `/login`.
+`accountDisabled` and `emailNotVerified` are covered deterministically without
+unsafe WorkOS state fabrication. Read-only staging aggregates showed no
+purchase, entitlement, license, or activation mutation. R8 remains out of
+scope.
+
+## R8 — Read-only product ownership projection
+
+**Local implementation complete; staging acceptance pending.**
+`sonder-system` establishes the provider-neutral `pulse`, `frame`, and `crate`
+catalog and the separate customer-products contract. The account page consumes
+that contract only after the existing session request confirms a linked
+customer, through a server-side no-store request. It renders only active
+effective ownership and preserves R7's unauthenticated, unlinked, disabled,
+verification-required, unavailable, header, and logout behavior. It does not
+render provider identifiers, purchases, historical/revoked ownership, licenses,
+activation/device data, downloads, billing, or controls.
+
+The API implementation requires an explicit mapping from the staging Lemon
+product/variant to a canonical ID. Existing provider projections are deliberately
+unmapped, and the existing Lemon `pulse` test fixture is not a mapping. No
+staging deployment, D1 mapping, QA account check, or staging mutation snapshot
+has yet been performed for R8; production remains untouched.
 
 ## Production gates
 

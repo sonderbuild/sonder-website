@@ -60,6 +60,23 @@ by the website's authenticated placeholder. It intentionally returns no
 entitlements, licenses, purchases, or activation data. There is no browser CORS
 surface in R6 because the Vercel server calls it directly.
 
+## R8 effective product ownership boundary
+
+After the existing customer-session relationship request confirms a linked
+customer, the website account page makes a second server-side, no-store request
+to the established `GET /v1/customer/products` contract. The browser does not
+call the Worker, select a customer, product, provider, or entitlement, or
+receive a token. The website renders only the effective active products returned
+by that contract and fails closed when its response is unavailable or malformed.
+
+Canonical product IDs, display names, ownership-state semantics, provider
+mapping rules, error codes, and compatibility policy are owned by
+`sonder-system`; the Worker owns the D1 read and explicit provider mapping.
+This repository does not duplicate that shared definition. The account surface
+does not receive purchase history, provider identifiers, licenses, activation
+state, device data, credentials, public keys, tickets, downloads, or billing
+data.
+
 ## R3 Lemon ingestion boundary
 
 `POST /webhooks/lemonsqueezy` is a Worker-only endpoint. It reads the raw body

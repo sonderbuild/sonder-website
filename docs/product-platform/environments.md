@@ -252,18 +252,42 @@ counts are not a before/after attribution record. The website authentication
 routes have no commercial mutation path, and no production WorkOS, Vercel,
 Cloudflare, DNS, data, or deployment changed.
 
-## R7 read-only account staging deployment
+## R7 read-only account staging verification
 
 On 2026-09-09, `sonder-api-staging` deployed the established
 customer-session cache policy and returned the unauthenticated contract response
-with `Cache-Control: private, no-store`. The protected Vercel staging deployment
-of the account consumer built successfully. A deployment-protected signed-out
-`/account` request redirected to `/login` and showed the shared `Sign in`
-header. The live Google control reached Google's account selection through
-WorkOS, but no QA account was selected. Deterministic API integration tests
-verify `accountDisabled` and `emailNotVerified`, avoiding unnecessary mutation
-of staging WorkOS/identity state. Two read-only D1 aggregate snapshots agreed
-at 2 purchases, 4 entitlements, 2 licenses, and 6 activations; both reads had
-zero writes. Linked/unlinked completed login, Magic Auth, signed-in header,
-sign-out, and post-logout checks remain pending protected QA credentials. This
-deployment made no production change.
+with `Cache-Control: private, no-store`. The authoritative website acceptance
+target is Vercel Git Preview `dpl_4r1nos7Qms2uUvrUQTrHpDuiYFjq` for staging
+commit `6225ef41bd461fcd26919967e76069de3fa5b9a6`; both
+`staging.sonder.build` and the staging branch alias resolved to that same Ready
+Preview. The earlier dirty custom-environment deployment had no staging-domain
+alias and was excluded from acceptance.
+
+The signed-out `/account` route redirected to `/login` and the header showed
+`Sign in`. The linked Magic Auth QA session rendered the connected-account
+state with `Account` in the header and no identity, customer, email, provider,
+or commercial value rendered. After sign-out, the header returned to `Sign in`.
+The unlinked Google QA session rendered only the distinct no-customer-account
+state, with no customer or commercial information. `accountDisabled` and
+`emailNotVerified` remain deterministically covered by the targeted API suite;
+staging identities were not altered to fabricate either state.
+
+Read-only D1 before/after aggregate checks remained at 2 purchases, 4
+entitlements, 2 licenses, and 6 activations. The after query recorded zero
+writes. The aggregate audit-event count was 17, but its newest entry preceded
+this acceptance window; it is not evidence of a R7 mutation. This verification
+made no production change.
+
+## R8 effective ownership staging status
+
+R8 has no staging deployment or acceptance evidence yet. Before staging
+verification, `sonder-api` must intentionally map the isolated staging Lemon
+product/variant to one canonical Sonder product ID under its provider-mapping
+policy; existing provider projections remain unmapped by design. The existing
+Lemon `pulse` test fixture is not evidence of that mapping.
+
+After the approved staging-only deployment, verify the linked QA account's
+effective entitlement projection, confirm each product appears at most once and
+contains no provider identifier, exercise Magic Auth, Google, and sign-out, and
+record before/after read-only D1 aggregates showing no entitlement, license, or
+activation mutation. Production remains excluded.

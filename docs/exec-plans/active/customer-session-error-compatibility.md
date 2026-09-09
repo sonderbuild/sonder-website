@@ -1,6 +1,16 @@
 # Customer-session error compatibility
 
-**Status:** deployed to staging; credentialed verification pending
+**Status:** staging acceptance complete; production untouched
+
+## R7 acceptance checkpoint
+
+R7 is accepted as a closed, read-only customer-account milestone. Its accepted
+surface ends at the authenticated identity/customer relationship and its
+explicit denied states. The verified staging target, credentialed QA evidence,
+deterministic denied-state coverage, and read-only D1 aggregate evidence below
+are the final acceptance record. R8 ownership projection is a separate
+contract-first milestone and does not retroactively enlarge this endpoint or
+R7's account surface.
 
 ## Goal and scope
 
@@ -26,15 +36,19 @@ device, billing, download, or profile feature.
   API work was deployed.
 - `GET /v1/customer/session` without credentials returned
   `401 { error: "unauthenticated" }` and `Cache-Control: private, no-store`.
-- The Vercel target `staging` deployment
-  `dpl_FCBepu35Sd2J3v99PMrBPp8HsNMq` built successfully and is Ready. A
-  deployment-protected signed-out request reached `/account`, redirected to
-  `/login`, and rendered the `Sign in` header state.
-- The live Google control reached Google's account-selection page through the
-  configured WorkOS callback. No QA account was selected or credentials entered.
-- Two privacy-safe staging D1 snapshots agreed: 2 purchases, 4 entitlements,
-  2 licenses, 6 device activations, and 10 commercial audit events. Both reads
-  performed zero writes.
+- Git Preview `dpl_4r1nos7Qms2uUvrUQTrHpDuiYFjq` for commit
+  `6225ef41bd461fcd26919967e76069de3fa5b9a6` is Ready. Both
+  `staging.sonder.build` and the staging branch alias resolve to it. The earlier
+  dirty custom-environment deployment is not an alias target.
+- The signed-out account route redirected to `/login` with the `Sign in`
+  header. The linked Magic Auth QA session rendered the connected state; the
+  unlinked Google QA session rendered only the explicit unlinked state. Neither
+  page rendered customer IDs, email, provider details, or commercial state.
+- Sign-out returned the header to `Sign in` and kept `/account` protected.
+- Read-only before/after D1 aggregates remained at 2 purchases, 4 entitlements,
+  2 licenses, and 6 activations. The after query made zero writes. Its 17
+  audit-event rows all predated the acceptance window; no audit change is
+  attributed to R7.
 
 ## Deterministic acceptance evidence
 
@@ -45,15 +59,5 @@ distinct `accountDisabled` and `emailNotVerified` responses. These two denied
 states are exercised deterministically because creating disabled identities or
 unverified WorkOS users in staging would alter QA identity state without adding
 customer-value evidence.
-
-## Remaining credentialed staging verification
-
-Use the protected staging deployment and synthetic QA identities only:
-
-1. With existing linked and unlinked QA credentials, complete Magic Auth and
-   Google sign-in, then verify linked/unlinked account rendering, signed-in
-   `Account` header, sign-out, and post-logout redirect.
-2. Confirm the aggregate staging counts remain unchanged after that completed
-   QA verification window.
 
 Production was not deployed or changed.

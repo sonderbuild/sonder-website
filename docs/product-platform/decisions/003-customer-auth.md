@@ -13,12 +13,14 @@ The custom API is intentionally preferred over a hosted AuthKit redirect or
 iframe. Each mutation is same-origin and protected by a short-lived
 double-submit CSRF value. The API secret remains server-side, code failures are
 generic, and a response without `email_verified` never creates a website
-session. Passwords remain disabled. R6.2 adds Google only in staging via
-WorkOS's custom Authentication API: the user sees a Sonder-owned button,
-authorizes with Google, and returns to a Sonder callback that exchanges the code
-server-side. The user does not visit hosted AuthKit UI. Apple uses the same
-provider-neutral code path but remains disabled and invisible until paid Apple
-Developer Program access and its WorkOS configuration are available.
+session. Passwords remain disabled. R6.2 adds Google in staging via
+WorkOS's custom Authentication API: the user sees a sonder-owned button,
+authorizes with Google, and returns to a sonder callback that exchanges the code
+server-side. The user does not visit hosted AuthKit UI. R6.3 enables Apple in
+WorkOS staging through the same provider-neutral code path, using WorkOS default
+credentials only. Apple consent can therefore show WorkOS branding, but the
+normal UI and callback remain on sonder. Production Apple remains disabled until
+sonder has paid Apple Developer Program access and supplies its own credentials.
 
 WorkOS currently exposes passkeys only through hosted AuthKit UI. R6 therefore
 does not expose passkey sign-in or enrollment in the custom interface and does
@@ -43,6 +45,11 @@ is immutable at the database layer, and a partial unique customer index prevents
 a customer from acquiring a second WorkOS subject. A changed email, Apple relay
 address, or unexpected second WorkOS subject never silently merges customer
 access. Any correction is an explicit future support operation.
+
+The global header is server-rendered from the existing sealed AuthKit session:
+it exposes only `Account` or `Sign in`, never customer identity data. A missing
+or invalid session fails closed. This adds no portal data or client-trusted
+session state.
 
 This decision does not add account product data, native-app authorization,
 account claims, or a customer portal.

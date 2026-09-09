@@ -29,7 +29,7 @@
     },
     "workos-auth-staging": {
       "mode": "manual",
-      "instructions": "Use the protected staging Vercel deployment with the separate WorkOS test environment. Exercise Magic Auth request, invalid/expired code, rate limit, sign-out, and verified-email behavior without logging an email or code. Then exercise Google authorization, cancellation, invalid callback state, same-WorkOS-subject idempotency, and verified-email behavior. Passwords, Apple until explicitly configured, hosted AuthKit UI, and passkeys are intentionally out of scope."
+      "instructions": "Use the protected staging Vercel deployment with the separate WorkOS test environment. Exercise Magic Auth request, invalid/expired code, rate limit, sign-out, and verified-email behavior without logging an email or code. Then exercise each explicitly allowlisted social provider: Google, and staging-only Apple if WorkOS default credentials are enabled. Verify cancellation, invalid callback state, same-WorkOS-subject idempotency, verified-email behavior, and the server-rendered header before and after sign-in/sign-out. Passwords, hosted AuthKit UI, passkeys, and Apple production configuration are intentionally out of scope."
     },
     "website-api-account-session-staging": {
       "mode": "manual",

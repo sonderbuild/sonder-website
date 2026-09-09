@@ -1,6 +1,6 @@
 # R6.3 — Auth surface completion
 
-**Status:** in progress
+**Status:** complete in staging
 
 ## Reconciled goal
 
@@ -20,7 +20,7 @@ header state.
   to later production authorization. Passwords remain disabled.
 - Apple uses the existing provider-neutral `AppleOAuth` seam only. WorkOS
   default Apple credentials are eligible for staging testing only; production
-  remains disabled until Sonder owns the Apple Developer credentials.
+  remains disabled until sonder owns the Apple Developer credentials.
 - Website changes stay on `staging`; Worker, D1 schema, commerce, licensing,
   activation, and R7 stay out of scope.
 
@@ -45,9 +45,14 @@ header state.
    counts; do not create production state or expose credentials, tokens, or
    email addresses.
 
-## Open external action
+## Completed external configuration and evidence
 
-At implementation completion, enable Sign in with Apple in the **WorkOS
-staging** dashboard using WorkOS default credentials, then add `apple` to the
-staging-only Vercel provider allowlist. This does not authorize production
-configuration or Sonder-owned Apple credentials.
+WorkOS staging enabled its default Apple credentials and Vercel staging set the
+existing provider allowlist to `google,apple`; no sonder Apple secret was
+created. Apple completed through the existing callback to `/account`, with the
+expected WorkOS consent branding. A sealed session rendered `Account` in the
+global header and sign-out rendered `Sign in`. Privacy-safe D1 aggregate
+inspection confirmed the current staging inventory only; because no global
+before-snapshot was captured, it does not attribute commercial rows to Apple.
+The website authentication path has no commercial mutation. Production remained
+untouched.

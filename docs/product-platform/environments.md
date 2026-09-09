@@ -157,7 +157,9 @@ redirect URI, or user directory for local or staging work.
 ### Staging configuration
 
 1. In the WorkOS test environment, enable **Magic Auth** and **Google OAuth**.
-   Disable passwords, Apple OAuth, and every other social provider. Do not add
+   WorkOS default Apple credentials may enable **Apple OAuth** in staging only;
+   do not enter sonder-owned Apple credentials until production readiness.
+   Disable passwords and every other social provider. Do not add
    passkey controls to the R6 custom UI: WorkOS currently supports passkeys only
    through hosted UI. Add
    `https://staging.sonder.build/login` as both the Sign-in URL and the
@@ -170,7 +172,7 @@ redirect URI, or user directory for local or staging work.
    `WORKOS_API_KEY`, a unique 32+-character `WORKOS_COOKIE_PASSWORD`,
    `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://staging.sonder.build/login`, and the
    server-only `SONDER_API_ORIGIN=https://sonder-api-staging.sonderbuild.workers.dev`,
-   `WORKOS_SOCIAL_PROVIDERS=google`, and
+   `WORKOS_SOCIAL_PROVIDERS=google,apple` when WorkOS staging Apple is enabled, and
    `WORKOS_SOCIAL_REDIRECT_URI=https://staging.sonder.build/api/auth/social/callback`.
    No Worker, Lemon, or signing private key belongs in Vercel.
 3. In the API repository, set the staging-only values interactively—never as
@@ -220,7 +222,7 @@ event. No license or device activation was created by commerce or authentication
 
 **Status:** staging verification complete on 2026-09-09. The branch Preview
 showed Google only; Apple was neither visible nor configured. After the WorkOS
-test application allowlisted the Sonder social callback, Google authorization
+test application allowlisted the sonder social callback, Google authorization
 went through WorkOS to Google and the completed user flow returned to
 `/account`. Magic Auth and sign-out were also rerun successfully on the same
 Preview. Sanitized D1 aggregates for the existing QA customer showed exactly
@@ -230,6 +232,22 @@ Mode commerce projection; it had zero licenses and zero device activations.
 The same-subject Google login therefore added no identity, audit, entitlement,
 license, or activation row. Automated R6.2 coverage exercises cancellation,
 invalid state, disabled-provider rejection, unknown identity, and second-subject
-collision; those negative paths remain fail-closed. Apple remains deferred: do
-not set Apple credentials, enable its provider, or set `apple` in
-`WORKOS_SOCIAL_PROVIDERS`.
+collision; those negative paths remain fail-closed.
+
+### R6.3 Apple and header staging verification
+
+**Status:** staging verification complete on 2026-09-09. WorkOS staging default
+Apple credentials were enabled without sonder Apple secrets, and the Preview
+allowlist was set to `google,apple` with the existing
+`https://staging.sonder.build/api/auth/social/callback`. The Apple button was
+visible only after that explicit configuration. Apple authorization showed
+expected WorkOS branding, completed through the existing callback to `/account`,
+and used the same sealed website session. The shared header showed `Account`
+for the session and `Sign in` after sign-out; it showed neither user data nor a
+client-side session flash. Magic Auth and Google retain their previously
+verified staging paths. The final privacy-safe D1 inventory was one linked and
+two unlinked identities; one `identity.linked` and three `identity.unlinked`
+audits; four entitlements, two licenses, and six activations. Those global
+counts are not a before/after attribution record. The website authentication
+routes have no commercial mutation path, and no production WorkOS, Vercel,
+Cloudflare, DNS, data, or deployment changed.

@@ -55,6 +55,23 @@ describe("custom social authentication", () => {
     expect(workos.getAuthorizationUrl).not.toHaveBeenCalled();
   });
 
+  it("starts Apple through the same server-side WorkOS seam when configured", () => {
+    const workos = client();
+
+    expect(createSocialAuthorizationUrl(workos, {
+      clientId: "client_01",
+      provider: "apple",
+      redirectUri: "https://staging.sonder.build/api/auth/social/callback",
+      state,
+    }, ["google", "apple"])).toContain("api.workos.com");
+    expect(workos.getAuthorizationUrl).toHaveBeenCalledWith({
+      clientId: "client_01",
+      provider: "AppleOAuth",
+      redirectUri: "https://staging.sonder.build/api/auth/social/callback",
+      state,
+    });
+  });
+
   it("accepts a matching Google callback and exchanges its code server-side", async () => {
     const callback = readSocialCallback({
       code: "code_01",
@@ -70,13 +87,28 @@ describe("custom social authentication", () => {
     expect(workos.authenticateWithCode).toHaveBeenCalledWith({ clientId: "client_01", code: "code_01" });
   });
 
+  it("accepts a matching Apple callback and exchanges its code server-side", async () => {
+    const callback = readSocialCallback({
+      code: "code_01",
+      error: null,
+      state,
+      storedState: encodeSocialState("apple", state),
+    }, ["google", "apple"]);
+    expect(callback).toEqual({ kind: "code", code: "code_01", provider: "apple" });
+
+    const workos = client();
+    if (callback.kind !== "code") throw new Error("Expected an authorization code");
+    await expect(authenticateSocialCode(workos, "client_01", callback.code)).resolves.toMatchObject({ kind: "authenticated" });
+    expect(workos.authenticateWithCode).toHaveBeenCalledWith({ clientId: "client_01", code: "code_01" });
+  });
+
   it("treats provider cancellation as a safe return to login", () => {
     expect(readSocialCallback({
       code: null,
       error: "access_denied",
       state,
-      storedState: encodeSocialState("google", state),
-    }, ["google"])).toEqual({ kind: "cancelled" });
+      storedState: encodeSocialState("apple", state),
+    }, ["google", "apple"])).toEqual({ kind: "cancelled" });
   });
 
   it("rejects invalid state, unsupported provider state, and unconfigured callbacks", () => {

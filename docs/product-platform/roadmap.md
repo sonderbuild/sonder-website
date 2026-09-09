@@ -56,13 +56,18 @@ public response contracts.
 
 ## R6 — Customer identity and authentication
 
-**R6 and R6.2 staging verified.** WorkOS Magic Auth runs behind a custom `/login` UI on
+**R6, R6.2, and R6.3 staging verified.** WorkOS Magic Auth runs behind a custom `/login` UI on
 the sonder domain, creates a server-managed sealed session, and preserves the
 Worker-side verified session boundary. The Worker requires native AuthKit's
 client-scoped issuer and JWKS for the configured client, RS256, expiry, subject,
 and `client_id`, without an `aud` requirement. Passwords remain disabled. R6.2
 adds Google-only social sign-in in staging via the WorkOS custom Authentication
-API; Apple is prepared but deferred pending Apple Developer Program access.
+API. R6.3 enables WorkOS default Apple credentials in staging only through the
+same provider-neutral path; provider consent may show WorkOS branding.
+Production Apple remains deferred pending Apple Developer Program access and
+sonder-owned Apple credentials. The server-rendered global header reads the
+sealed session and shows only `Account` or `Sign in`, failing closed for absent
+or invalid sessions without client identity state.
 Passkey UI is deferred because WorkOS currently supports
 passkeys only through hosted AuthKit, which R6 intentionally does not use. A
 forward migration adds provider-neutral identity links and makes an existing
@@ -77,7 +82,9 @@ identity constraint: one customer may have only one linked WorkOS subject.
 Google staging sign-in returned to `/account`, its same-subject path remained
 idempotent, and Magic Auth plus sign-out still worked. Sanitized staging
 aggregates showed no authentication-created entitlement, license, or activation
-state. Apple remains deferred and no R7 scope is started.
+state. Final Apple inspection recorded only privacy-safe global inventory
+counts, which are not a causal before/after commercial-state record; the
+authentication path has no commercial mutation. No R7 scope is started.
 
 ## Production gates
 

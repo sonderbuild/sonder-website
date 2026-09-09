@@ -35,9 +35,11 @@
 
 ## Customer sessions and identity links
 
-- Configure the custom R6.2 UI with Magic Auth and only the explicitly
-  allowlisted Google provider in staging. Keep passwords, Apple, and every
-  other social provider disabled until separately approved and configured.
+- Configure the custom R6.3 UI with Magic Auth plus only the explicitly
+  allowlisted Google and Apple providers in staging. Apple uses WorkOS default
+  credentials there only; do not add sonder Apple credentials, enable Apple in
+  production, or enable any other provider without a separate decision. Keep
+  passwords disabled.
   WorkOS currently offers passkeys only through hosted UI, so do not add a
   passkey redirect or enrollment control until its custom API supports it. Use
   a WorkOS test environment and a staging-only application until production
@@ -56,6 +58,10 @@
   only in a ten-minute, Secure, HttpOnly, `SameSite=Lax` callback cookie; the
   callback consumes it before the server-side WorkOS authorization-code
   exchange. Reject missing, mismatched, unsupported, or disabled providers.
+- The shared header derives its `Account`/`Sign in` choice only from the sealed
+  server session after the AuthKit proxy. It holds no browser identity state and
+  renders dynamically per request, so an invalid session fails closed and a
+  cached header cannot cross users.
 - The Worker validates every native AuthKit bearer JWT against
   `https://api.workos.com/sso/jwks/<WORKOS_CLIENT_ID>` using RS256. It requires
   the exact client-scoped issuer

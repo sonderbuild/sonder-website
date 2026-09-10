@@ -128,7 +128,7 @@ post-read query recorded zero writes. Production remains untouched.
 
 ## R11A — Browser activation approval surface
 
-**Staging verified, with one recorded verifier limitation.** The website owns the
+**Staging verified.** The website owns the
 minimal authenticated approval/deny presentation for R10's opaque activation
 request URL. It uses the existing sealed WorkOS session only in server-side
 calls to the Worker, preserves the exact opaque request through custom Magic
@@ -141,9 +141,21 @@ state fields, so the website does not invent them. The exact protected staging
 Git Preview verified sign-in return, terminal rendering, approval without a
 ticket, P-256 completion and consumption, wrong-key and replay rejection,
 denial, expiry, and the capacity presentation. The compact ticket shape was
-observed, but the separately retained non-secret staging Ed25519 verification
-key was unavailable, so independent signature verification was not repeated.
-The isolated QA fixture was revoked and removed; production is untouched.
+observed and R10.2 later independently verified a fresh ticket with the
+staging-only public `staging-ed25519-v2` trust artifact. The isolated QA fixture
+was revoked and removed; production is untouched.
+
+## R11B — Customer activation management
+
+**Implementation in progress.** The account surface consumes the established
+customer-licensing read contract after its existing server-side session check.
+It presents activation slots and active device presentation metadata only. An
+explicit confirmation uses the existing short-lived same-origin CSRF relay to
+revoke an opaque activation, then refreshes from the Worker. The Worker owns
+authorization, D1 revocation/audit, capacity release, and later refresh
+rejection. It exposes no keys, fingerprints, credentials, provider IDs,
+purchase history, downloads, or anonymous app-side deactivation. Staging
+acceptance and cleanup remain required; production is untouched.
 
 ## Production gates
 

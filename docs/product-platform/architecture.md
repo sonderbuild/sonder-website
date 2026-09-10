@@ -77,6 +77,23 @@ does not receive purchase history, provider identifiers, licenses, activation
 state, device data, credentials, public keys, tickets, downloads, or billing
 data.
 
+## R11B customer activation management boundary
+
+After the existing session check, `/account` reads the established
+`GET /v1/customer/licenses` projection server-to-server with `cache: "no-store"`.
+It presents the canonical product name, activation usage, remaining activation
+slots, and active device label/date/last-seen metadata. It renders no provider
+or WorkOS IDs, purchase history, license credentials, installation public keys
+or fingerprints, tickets, or signing material.
+
+The browser obtains a short-lived CSRF token and posts only an opaque activation
+ID to the same-origin website relay. The relay validates CSRF and the sealed
+WorkOS session before it calls the Worker revocation endpoint. Success triggers
+a server-authoritative router refresh; no client-side count is authoritative.
+The Worker owns ownership checks, D1 state, one material audit event, capacity
+release, and refresh rejection. Future recent-auth policy may return
+`stepUpRequired` without changing the relay path.
+
 ## R3 Lemon ingestion boundary
 
 `POST /webhooks/lemonsqueezy` is a Worker-only endpoint. It reads the raw body

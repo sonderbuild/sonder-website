@@ -14,6 +14,7 @@ vi.mock("@workos-inc/authkit-nextjs", () => ({
 
 vi.mock("next/navigation", () => ({
   redirect: (path: string) => { throw new Error(`redirect:${path}`); },
+  useRouter: () => ({ refresh: vi.fn() }),
 }));
 
 vi.mock("@/components/ui/container", () => ({
@@ -51,14 +52,17 @@ describe("account session boundary", () => {
   it("renders the linked state only for the stable linked response shape", async () => {
     const fetchMock = mockAuthenticatedAccount(
       { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
-      { status: 200, body: { products: [{ productId: "pulse", name: "Pulse", entitlement: { status: "active" } }] } },
+      { status: 200, body: { products: [{ productId: "pulse", name: "Pulse", entitlement: { status: "active" }, license: { status: "active", activationLimit: 3, activeActivationCount: 1, remainingActivationSlots: 2, activations: [{ activationId: "activation-id", deviceLabel: "Studio Mac", activatedAt: "2026-09-11T12:00:00Z", lastSeenAt: "2026-09-11T13:00:00Z", status: "active" }] } }] } },
     );
 
     const account = await renderAccount();
     expect(account).toContain("Your customer account is connected.");
     expect(account).toContain("Your products");
     expect(account).toContain("Pulse");
-    expect(account).toContain("Active");
+    expect(account).toContain("Activations");
+    expect(account).toContain("1 of 3 used");
+    expect(account).toContain("2 slots available");
+    expect(account).toContain("Studio Mac");
     expect(account).not.toContain("identity-id");
     expect(account).not.toContain("customer-id");
     expect(fetchMock).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({ cache: "no-store", headers: { Authorization: "Bearer access-token" } }));
@@ -106,11 +110,11 @@ describe("account session boundary", () => {
   it("does not render product data when the ownership response is malformed or unavailable", async () => {
     mockAuthenticatedAccount(
       { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
-      { status: 503, body: { error: "ownershipUnavailable" } },
+      { status: 503, body: { error: "licensingUnavailable" } },
     );
 
     const account = await renderAccount();
-    expect(account).toContain("could not load your products");
+    expect(account).toContain("could not load your activation details");
     expect(account).not.toContain("identity-id");
     expect(account).not.toContain("customer-id");
   });

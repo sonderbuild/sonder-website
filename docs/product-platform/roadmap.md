@@ -128,7 +128,7 @@ post-read query recorded zero writes. Production remains untouched.
 
 ## R11A — Browser activation approval surface
 
-**Implemented locally; staging verification pending.** The website now owns the
+**Staging verified, with one recorded verifier limitation.** The website owns the
 minimal authenticated approval/deny presentation for R10's opaque activation
 request URL. It uses the existing sealed WorkOS session only in server-side
 calls to the Worker, preserves the exact opaque request through custom Magic
@@ -137,9 +137,13 @@ an explicit customer decision. The surface shows only provider-neutral request
 preview fields and reports approval as approval—not activation—until the app
 completes the separate installation-key proof. It has no device-management or
 activation-revocation UI. The deployed R10 preview does not include expiry or
-state fields, so the website does not invent them. Staging acceptance remains
-the exact staging Git Preview and the R10 API/device-proof lifecycle; production
-is untouched.
+state fields, so the website does not invent them. The exact protected staging
+Git Preview verified sign-in return, terminal rendering, approval without a
+ticket, P-256 completion and consumption, wrong-key and replay rejection,
+denial, expiry, and the capacity presentation. The compact ticket shape was
+observed, but the separately retained non-secret staging Ed25519 verification
+key was unavailable, so independent signature verification was not repeated.
+The isolated QA fixture was revoked and removed; production is untouched.
 
 ## Production gates
 

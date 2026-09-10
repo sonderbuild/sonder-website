@@ -47,3 +47,35 @@ ticket, or capacity semantics, all of which remain `sonder-api` concerns.
   staging lifecycle evidence with the separately authorized QA fixture.
 - Production is excluded. Full R11 device management, activation revocation UI,
   app integration, and `sonderLicensing` remain out of scope.
+
+## Staging evidence — 2026-09-10
+
+- Commit `de7b17a` was pushed only to `staging`. Vercel deployed
+  `dpl_EjNtR3o1QUVoXcJ4kHDB6fLhwtsz` at
+  `https://sonder-website-eonrm9wqs-sonder17.vercel.app`, with the protected
+  `staging.sonder.build` alias targeting that staging preview.
+- The signed-out path redirected to the custom login surface with the exact
+  opaque `/account/activate/{requestId}` return path. An expired request then
+  rendered the fail-closed terminal presentation; no request details or ticket
+  were exposed.
+- With the existing linked staging WorkOS session, the authenticated customer
+  approved a fresh request. The API returned only `state: approved`; no ticket
+  was issued until the installation completed its P-256 proof. Successful proof
+  consumed the request and created exactly one activation. A repeated completion
+  was rejected, and a proof from a different key was rejected before the valid
+  installation key could complete its own request.
+- The capacity presentation showed `3 of 3 used` and the API kept the request
+  pending after rejecting allocation. A separate request was denied through the
+  same authenticated surface and polled as `denied`. A distinct staging-only
+  request whose expiry was forced in D1 polled as `expired`.
+- The returned ticket had the expected three compact segments. Independent
+  cryptographic verification was not repeated in this run: the non-secret
+  `staging-ed25519-v1` public verifier is deliberately retained outside these
+  repositories and was not available to this session. No private key or raw
+  license credential was requested or accessed.
+- Cleanup revoked the isolated `sonder_qa_fixture` through the staging
+  revocation path, detached its entitlement, deactivated all three synthetic
+  activations, and deleted the named test requests. Final staging counts were
+  zero active fixture activations, zero linked fixture entitlements, zero test
+  requests, and one disabled fixture license. Production was not queried,
+  migrated, deployed, or changed.

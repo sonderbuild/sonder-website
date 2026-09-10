@@ -15,3 +15,10 @@ architecture for a project.
   variables, and deployment configuration explicit and project-owned.
 - Use focused tests and runtime checks appropriate to the changed path; do not
   treat a component-only test as proof that a browser-to-service flow works.
+
+## Interface craft
+
+For user-facing interface, motion, typography, material, or accessibility work,
+use the globally installed `development-harness-apple-design` Codex Skill.
+Apply it through the project's browser and framework conventions, including
+browser validation for input and accessibility behavior.

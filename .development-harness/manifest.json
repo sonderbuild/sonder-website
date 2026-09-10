@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "harnessVersion": "1.0.0",
+  "harnessVersion": "1.0.1",
   "adapters": [
     "codex"
   ],
@@ -62,7 +62,7 @@
     },
     ".development-harness/managed/profiles/web-common/PROFILE.md": {
       "source": "profiles/web-common/PROFILE.md",
-      "sha256": "db1a2d0361194e7ca9a2fead579cae37176d295db44329db59dd377415dacfb5"
+      "sha256": "fef51889973fb90442b1cc2465e2be6e6a5dceffad55eafc4d0bfb9a5b246ebd"
     }
   }
 }

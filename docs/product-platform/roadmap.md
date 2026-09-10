@@ -106,7 +106,7 @@ scope.
 
 ## R8 — Read-only product ownership projection
 
-**Local implementation complete; staging acceptance pending.**
+**Staging acceptance complete; production untouched.**
 `sonder-system` establishes the provider-neutral `pulse`, `frame`, and `crate`
 catalog and the separate customer-products contract. The account page consumes
 that contract only after the existing session request confirms a linked
@@ -116,11 +116,15 @@ verification-required, unavailable, header, and logout behavior. It does not
 render provider identifiers, purchases, historical/revoked ownership, licenses,
 activation/device data, downloads, billing, or controls.
 
-The API implementation requires an explicit mapping from the staging Lemon
-product/variant to a canonical ID. Existing provider projections are deliberately
-unmapped, and the existing Lemon `pulse` test fixture is not a mapping. No
-staging deployment, D1 mapping, QA account check, or staging mutation snapshot
-has yet been performed for R8; production remains untouched.
+Staging has one explicit QA-only Lemon Test Mode variant mapping to canonical
+`pulse`; it is not production catalog configuration, and Frame and Crate remain
+unmapped. The accepted website target is Ready Preview
+`BRQ3Yo9tL2qPTGYb6CYEWsXj8yjq` at staging commit
+`d64e4288524971628f2128f67cdb15c00298d0b7`, also assigned to
+`staging.sonder.build`. The linked QA Magic Auth session rendered exactly one
+`Pulse — Active` entry. The before/after staging D1 aggregates were identical:
+2 purchases, 4 entitlements, 2 licenses, and 6 device activations; the
+post-read query recorded zero writes. Production remains untouched.
 
 ## Production gates
 

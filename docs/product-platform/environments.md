@@ -280,14 +280,37 @@ made no production change.
 
 ## R8 effective ownership staging status
 
-R8 has no staging deployment or acceptance evidence yet. Before staging
-verification, `sonder-api` must intentionally map the isolated staging Lemon
-product/variant to one canonical Sonder product ID under its provider-mapping
-policy; existing provider projections remain unmapped by design. The existing
-Lemon `pulse` test fixture is not evidence of that mapping.
+On 2026-09-10, `sonder-api-staging` applied migration `0008` and recorded one
+explicit QA-only mapping from the existing isolated Lemon Test Mode variant to
+canonical `pulse`. This mapping is confined to `sonder-platform-staging`; it
+does not establish a production provider representation, map Frame or Crate, or
+derive identity from a Lemon field. Worker version
+`c91c6796-455e-4687-8ff5-592d8a24f0d5` is deployed to staging only.
 
-After the approved staging-only deployment, verify the linked QA account's
-effective entitlement projection, confirm each product appears at most once and
-contains no provider identifier, exercise Magic Auth, Google, and sign-out, and
-record before/after read-only D1 aggregates showing no entitlement, license, or
-activation mutation. Production remains excluded.
+**Status:** staging acceptance complete on 2026-09-10. The authoritative
+website target was Ready Vercel Git Preview
+`BRQ3Yo9tL2qPTGYb6CYEWsXj8yjq`, source commit
+`d64e4288524971628f2128f67cdb15c00298d0b7`, with
+`staging.sonder.build` assigned. Its runtime log recorded the same-origin
+`GET /api/auth/csrf` as `200`; the login controls enabled and the linked QA
+customer completed Magic Auth. The authenticated `/account` page rendered one
+and only one effective ownership entry, `Pulse` with `Active`, with no Lemon or
+other provider identifier shown. This is the canonical catalog name and ID
+projection, not an inferred provider product identity.
+
+The deployed read-only customer-products path preserves its `private, no-store`
+cache contract. Targeted API contract coverage establishes zero products,
+multiple products, duplicate effective grants deduplicated to one product,
+revoked ownership excluded, identity/customer denials, provider-data exclusion,
+and zero writes; the focused website account suite passed 10/10 during this
+acceptance. R7's accepted Google, header, and sign-out coverage remains intact;
+the current staging login presented Google and Apple according to the approved
+staging configuration.
+
+The privacy-safe D1 aggregate snapshot before the authenticated reads was 2
+purchases, 4 entitlements, 2 licenses, 6 device activations, and one `pulse`
+mapping. The post-read snapshot was identical. The post query reported
+`rows_written: 0` and `changed_db: false`; licenses and device activations were
+therefore unchanged. These requests created no entitlement, license, or
+activation record and performed no reconciliation. Production D1, Lemon Live
+Mode, Vercel Production, and production deployments were untouched.

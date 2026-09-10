@@ -314,3 +314,23 @@ mapping. The post-read snapshot was identical. The post query reported
 therefore unchanged. These requests created no entitlement, license, or
 activation record and performed no reconciliation. Production D1, Lemon Live
 Mode, Vercel Production, and production deployments were untouched.
+
+## R11B customer activation management staging status
+
+On 2026-09-10, staging branch commit `c90e5ff` deployed the account activation
+management surface to `staging.sonder.build`; its associated Worker deployment
+is `c45642a5-35bb-4cc0-aa85-1c9aeb3ac0f9`. The existing linked QA session
+rendered a staging-only fixture as `1 of 3 used`, `2 slots available`, and one
+labeled device with activated and last-seen dates. The explicit browser
+confirmation completed the same-origin CSRF-protected server relay. The
+server-refreshed page then showed `0 of 3 used`, `3 slots available`, and no
+device row. A valid P-256 installation-key refresh returned
+`403 activationUnavailable` after revocation.
+
+Fixture cleanup deleted the synthetic activation and challenges, restored the
+pre-existing QA license to disabled/detached, and left its entitlement active.
+The final query showed zero synthetic activation/challenge/request rows and two
+purchases. No purchase or entitlement status changed. Automated website tests
+preserve the Magic Auth/Google/header/logout regressions; a second staging WorkOS
+identity was not fabricated solely to rerun the deterministic repeat and
+cross-customer negative paths. Production was untouched.

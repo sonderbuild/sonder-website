@@ -147,7 +147,7 @@ was revoked and removed; production is untouched.
 
 ## R11B — Customer activation management
 
-**Implementation in progress.** The account surface consumes the established
+**Staging verified, with scoped multi-identity evidence noted.** The account surface consumes the established
 customer-licensing read contract after its existing server-side session check.
 It presents activation slots and active device presentation metadata only. An
 explicit confirmation uses the existing short-lived same-origin CSRF relay to
@@ -155,7 +155,51 @@ revoke an opaque activation, then refreshes from the Worker. The Worker owns
 authorization, D1 revocation/audit, capacity release, and later refresh
 rejection. It exposes no keys, fingerprints, credentials, provider IDs,
 purchase history, downloads, or anonymous app-side deactivation. Staging
-acceptance and cleanup remain required; production is untouched.
+acceptance proved live usage, device metadata, explicit revoke, immediate count
+refresh, and post-revoke installation-key refresh rejection. The QA fixture was
+restored. Repeat and cross-customer paths are deterministic API evidence because
+the staging browser session has one linked QA identity; no second identity was
+fabricated. Production is untouched.
+
+## Future internal platform work
+
+### Sonder Admin — internal administration console
+
+**Status: IDEA — unscheduled; no implementation is authorized.** Sonder Admin
+is a future, separate internal web application at the default hostname
+`admin.sonder.build`. It is deliberately unnumbered: this future track does
+not change the ordering of R11B and R12.
+
+Sonder Admin is an internal operational surface for customer lookup;
+identity/customer linkage inspection; commerce-projection inspection;
+entitlement, license, and activation inspection; support operations; and
+webhook, outbox, and audit visibility. It may eventually expose explicitly
+approved operational mutations. The initial implementation must be read-mostly;
+each mutation capability is added individually only after its contract exists.
+
+Ownership remains deliberately split:
+
+- Sonder Admin is a separate internal web application/project, not an extension
+  of the public `sonder-website`.
+- `sonder-api` remains the authority for platform, customer, and license
+  mutations.
+- `sonder-system` owns shared admin-operation semantics that cross repository
+  boundaries.
+- Lemon remains the commerce authority, and WorkOS remains the identity
+  authority.
+- The admin UI never becomes a data source of truth.
+
+The future implementation requires a separate Vercel project from the public
+website, deployment-level access protection, and a second application-level
+Sonder admin authorization layer. That layer must use explicit allowlisted
+admin identities or roles; ordinary customer accounts cannot become admins.
+Sensitive mutations may require recent or step-up authentication, and every
+material mutation must be audited.
+
+Admin API endpoints must be least-privilege and purpose-specific. Sonder Admin
+must not offer arbitrary SQL, direct browser database credentials, or provider
+secrets in the browser. Staging and production remain isolated. Destructive
+production operations require explicit authorization.
 
 ## Production gates
 

@@ -22,3 +22,14 @@ activation, ticket, or capacity state.
 Focused page and relay tests cover response validation, no leak, and CSRF.
 Staging remains responsible for the authenticated website flow, actual D1 state,
 refresh rejection, repeat revoke, ownership denial, and fixture cleanup.
+
+## Staging result
+
+The staging branch deployment at `staging.sonder.build` rendered the live QA
+fixture as `1 of 3 used`, `2 slots available`, and one labeled device with its
+dates. Its explicit confirmation invoked the CSRF-protected relay; the page
+then refreshed to `0 of 3 used` and `3 slots available`. The staging Worker
+rejected a valid installation-key refresh after the revoke. The fixture was
+restored. The one available staging browser session is linked to the QA customer,
+so cross-customer and repeat behavior remains deterministic-test evidence rather
+than fabricated identity evidence.

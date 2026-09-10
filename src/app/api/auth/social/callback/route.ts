@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   if (result.kind !== "authenticated") return redirectToLogin(request, "socialFailed");
 
   const saved = await persistMagicAuthSession(result.response, async (response) => saveSession(response, request));
-  return saved.kind === "authenticated" ? redirectTo(request, "/account") : redirectToLogin(request, "socialFailed");
+  return saved.kind === "authenticated" ? redirectTo(request, callback.returnTo ?? "/account") : redirectToLogin(request, "socialFailed");
 }
 
 function redirectToLogin(request: NextRequest, error: "socialCancelled" | "socialFailed") {

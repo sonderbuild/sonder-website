@@ -9,12 +9,14 @@ import {
   socialProvider,
   socialStateCookieName,
 } from "@/lib/auth/social-auth";
+import { activationReturnPath } from "@/lib/activation-approval";
 import { hasValidSameOriginCsrf, jsonBody } from "@/lib/auth/request-security";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ provider: string }> }) {
-  if (!hasValidSameOriginCsrf(request) || !(await jsonBody(request))) return NextResponse.json({ error: "invalidRequest" }, { status: 403, headers: noStore });
+  const body = await jsonBody(request);
+  if (!hasValidSameOriginCsrf(request) || !body) return NextResponse.json({ error: "invalidRequest" }, { status: 403, headers: noStore });
 
   const { provider: rawProvider } = await context.params;
   const provider = socialProvider(rawProvider);
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
   if (!url) return NextResponse.json({ error: "temporarilyUnavailable" }, { status: 503, headers: noStore });
 
   const response = NextResponse.json({ url }, { headers: noStore });
-  response.cookies.set(socialStateCookieName, encodeSocialState(provider, state), {
+  response.cookies.set(socialStateCookieName, encodeSocialState(provider, state, activationReturnPath(body.returnTo)), {
     httpOnly: true,
     maxAge: 10 * 60,
     path: "/api/auth/social/callback",

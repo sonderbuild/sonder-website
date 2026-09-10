@@ -2,6 +2,7 @@ import { getWorkOS, saveSession } from "@workos-inc/authkit-nextjs";
 import { NextRequest, NextResponse } from "next/server";
 
 import { persistMagicAuthSession, verifyMagicAuth } from "@/lib/auth/magic-auth";
+import { activationReturnPath } from "@/lib/activation-approval";
 import { hasValidSameOriginCsrf, jsonBody } from "@/lib/auth/request-security";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
   if (result.kind === "authenticated") {
     const saved = await persistMagicAuthSession(result.response, async (authResponse) => saveSession(authResponse, request));
     return saved.kind === "authenticated"
-      ? response({ ok: true }, 200)
+      ? response({ ok: true, ...(activationReturnPath(body.returnTo) ? { returnTo: activationReturnPath(body.returnTo) } : {}) }, 200)
       : response({ error: "temporarilyUnavailable" }, 503);
   }
 

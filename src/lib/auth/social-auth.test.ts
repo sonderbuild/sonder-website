@@ -102,6 +102,18 @@ describe("custom social authentication", () => {
     expect(workos.authenticateWithCode).toHaveBeenCalledWith({ clientId: "client_01", code: "code_01" });
   });
 
+  it("preserves only a validated opaque activation return path through social state", () => {
+    const requestId = "A".repeat(43);
+    expect(readSocialCallback({
+      code: "code_01", error: null, state,
+      storedState: encodeSocialState("google", state, `/account/activate/${requestId}`),
+    }, ["google"])).toEqual({ kind: "code", code: "code_01", provider: "google", returnTo: `/account/activate/${requestId}` });
+    expect(readSocialCallback({
+      code: "code_01", error: null, state,
+      storedState: encodeSocialState("google", state, "https://attacker.test"),
+    }, ["google"])).toEqual({ kind: "code", code: "code_01", provider: "google" });
+  });
+
   it("treats provider cancellation as a safe return to login", () => {
     expect(readSocialCallback({
       code: null,

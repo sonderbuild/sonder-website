@@ -10,6 +10,7 @@ type Step = "email" | "code";
 type ApiResult = {
   error?: "invalidEmail" | "invalidCode" | "invalidRequest" | "providerUnavailable" | "temporarilyUnavailable" | "tryAgainLater";
   url?: string;
+  returnTo?: string;
 };
 
 const errorMessages: Record<NonNullable<ApiResult["error"]>, string> = {
@@ -21,7 +22,7 @@ const errorMessages: Record<NonNullable<ApiResult["error"]>, string> = {
   tryAgainLater: "Please wait a moment before trying again.",
 };
 
-export function LoginForm({ initialError, socialProviders }: { initialError?: "socialCancelled" | "socialFailed"; socialProviders: SocialProvider[] }) {
+export function LoginForm({ initialError, returnTo, socialProviders }: { initialError?: "socialCancelled" | "socialFailed"; returnTo?: string; socialProviders: SocialProvider[] }) {
   const router = useRouter();
   const [csrfToken, setCsrfToken] = useState<string>();
   const [email, setEmail] = useState("");
@@ -81,9 +82,9 @@ export function LoginForm({ initialError, socialProviders }: { initialError?: "s
 
     setIsPending(true);
     try {
-      const result = await post("/api/auth/magic/verify", { code, email }, csrfToken);
+      const result = await post("/api/auth/magic/verify", { code, email, ...(returnTo ? { returnTo } : {}) }, csrfToken);
       if (!result.ok) return setError(messageFor(result.body));
-      router.replace("/account");
+      router.replace(result.body.returnTo ?? "/account");
     } catch {
       setError(errorMessages.temporarilyUnavailable);
     } finally {
@@ -101,7 +102,7 @@ export function LoginForm({ initialError, socialProviders }: { initialError?: "s
 
     setIsPending(true);
     try {
-      const result = await post(`/api/auth/social/${provider}/start`, {}, csrfToken);
+      const result = await post(`/api/auth/social/${provider}/start`, returnTo ? { returnTo } : {}, csrfToken);
       if (!result.ok || !result.body.url) {
         setError(messageFor(result.body));
         setIsPending(false);

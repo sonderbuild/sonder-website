@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 
 import type { AuthenticationResponse } from "@workos-inc/node";
+import { activationReturnPath } from "@/lib/activation-approval";
 
 export type SocialProvider = "apple" | "google";
 
@@ -19,7 +20,7 @@ export type SocialAuthClient = {
 export type SocialCallback =
   | { kind: "cancelled" }
   | { kind: "invalid" }
-  | { kind: "code"; code: string; provider: SocialProvider };
+  | { kind: "code"; code: string; provider: SocialProvider; returnTo?: string };
 
 export const socialStateCookieName = "sonder-social-state";
 
@@ -45,8 +46,9 @@ export function createSocialState(): string {
   return crypto.randomUUID();
 }
 
-export function encodeSocialState(provider: SocialProvider, state: string): string {
-  return `${provider}.${state}`;
+export function encodeSocialState(provider: SocialProvider, state: string, returnTo?: string): string {
+  const safeReturnTo = activationReturnPath(returnTo);
+  return safeReturnTo ? `${provider}.${state}.${Buffer.from(safeReturnTo).toString("base64url")}` : `${provider}.${state}`;
 }
 
 export function createSocialAuthorizationUrl(
@@ -80,7 +82,7 @@ export function readSocialCallback(
   }
   if (input.error) return { kind: "cancelled" };
   if (!isOpaqueCode(input.code)) return { kind: "invalid" };
-  return { kind: "code", code: input.code, provider: stored.provider };
+  return { kind: "code", code: input.code, provider: stored.provider, ...(stored.returnTo ? { returnTo: stored.returnTo } : {}) };
 }
 
 export async function authenticateSocialCode(
@@ -98,13 +100,18 @@ export async function authenticateSocialCode(
   }
 }
 
-function parseStoredState(value: string | undefined): { provider: SocialProvider; state: string } | undefined {
+function parseStoredState(value: string | undefined): { provider: SocialProvider; state: string; returnTo?: string } | undefined {
   if (!value) return undefined;
-  const separator = value.indexOf(".");
-  if (separator < 1) return undefined;
-  const provider = socialProvider(value.slice(0, separator));
-  const state = value.slice(separator + 1);
-  return provider && isState(state) ? { provider, state } : undefined;
+  const [rawProvider, state, encodedReturnTo, ...extra] = value.split(".");
+  const provider = socialProvider(rawProvider);
+  if (!provider || !state || extra.length > 0 || !isState(state)) return undefined;
+  if (!encodedReturnTo) return { provider, state };
+  try {
+    const returnTo = activationReturnPath(Buffer.from(encodedReturnTo, "base64url").toString());
+    return returnTo ? { provider, state, returnTo } : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function isAllowedCallbackUrl(value: string | undefined): value is string {

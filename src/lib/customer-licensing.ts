@@ -1,8 +1,8 @@
 import { apiOrigin } from "@/lib/activation-approval";
 
 export type CustomerLicensingProduct = {
-  productId: "pulse" | "frame" | "crate";
-  name: "Pulse" | "Frame" | "Crate";
+  productId: "pulse" | "frame" | "crate" | "cue";
+  name: "Pulse" | "Frame" | "Crate" | "Cue";
   entitlement: { status: "active" | "grace" | "suspended" | "revoked" };
   license?: {
     status: "active" | "expired" | "refunded" | "disabled" | "unknown";
@@ -75,7 +75,7 @@ function isProduct(value: unknown): value is CustomerLicensingProduct {
 
 function isCanonicalProduct(product: Record<string, unknown>): boolean {
   return Object.keys(product).every((key) => ["productId", "name", "entitlement", "license"].includes(key))
-    && (product.productId === "pulse" && product.name === "Pulse" || product.productId === "frame" && product.name === "Frame" || product.productId === "crate" && product.name === "Crate");
+    && (product.productId === "pulse" && product.name === "Pulse" || product.productId === "frame" && product.name === "Frame" || product.productId === "crate" && product.name === "Crate" || product.productId === "cue" && product.name === "Cue");
 }
 
 function isEntitlement(value: unknown): boolean {

@@ -32,6 +32,16 @@ describe("activation approval boundary", () => {
     }));
   });
 
+  it("accepts the canonical Cue preview used by the staging fixture", async () => {
+    vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+      productId: "cue", name: "Cue", deviceLabel: null, requestedAt: 1,
+      activeActivationCount: 0, remainingActivationSlots: 3,
+    })));
+
+    await expect(previewActivationRequest("server-only-token", requestId)).resolves.toMatchObject({ kind: "ready", preview: { productId: "cue", name: "Cue" } });
+  });
+
   it("does not accept tickets or provider fields as a decision response", async () => {
     vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ state: "approved", ticket: "not-allowed" })));

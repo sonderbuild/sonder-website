@@ -1,6 +1,6 @@
 export type ActivationPreview = {
-  productId: "pulse" | "frame" | "crate";
-  name: "Pulse" | "Frame" | "Crate";
+  productId: "pulse" | "frame" | "crate" | "cue";
+  name: "Pulse" | "Frame" | "Crate" | "Cue";
   deviceLabel: string | null;
   requestedAt: number;
   activeActivationCount: number;
@@ -78,7 +78,7 @@ async function activationRequestApi(method: "GET" | "POST", accessToken: string,
 function isActivationPreview(value: unknown): value is ActivationPreview {
   if (typeof value !== "object" || value === null || Object.keys(value).length !== 6) return false;
   const preview = value as Record<string, unknown>;
-  return (preview.productId === "pulse" && preview.name === "Pulse" || preview.productId === "frame" && preview.name === "Frame" || preview.productId === "crate" && preview.name === "Crate")
+  return (preview.productId === "pulse" && preview.name === "Pulse" || preview.productId === "frame" && preview.name === "Frame" || preview.productId === "crate" && preview.name === "Crate" || preview.productId === "cue" && preview.name === "Cue")
     && (typeof preview.deviceLabel === "string" || preview.deviceLabel === null)
     && Number.isSafeInteger(preview.requestedAt)
     && typeof preview.activeActivationCount === "number" && Number.isSafeInteger(preview.activeActivationCount) && preview.activeActivationCount >= 0

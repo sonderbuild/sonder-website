@@ -69,6 +69,15 @@ describe("account session boundary", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("renders the canonical Cue licensing projection", async () => {
+    mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 200, body: { products: [{ productId: "cue", name: "Cue", entitlement: { status: "active" }, license: { status: "active", activationLimit: 3, activeActivationCount: 0, remainingActivationSlots: 3, activations: [] } }] } },
+    );
+
+    await expect(renderAccount()).resolves.toContain("Cue");
+  });
+
   it("renders an explicit unlinked state without leaking account data", async () => {
     mockAuthenticatedAccount({ status: 403, body: { error: "accountUnlinked" } });
 

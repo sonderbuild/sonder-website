@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { ProductHero } from "@/components/products/product-hero";
 import { ProductSection } from "@/components/products/product-section";
 import { getProduct, products } from "@/data/products";
+import { getProductMarketingContent } from "@/lib/cms/product-marketing.server";
+import { productWithMarketingContent } from "@/lib/cms/source-product-marketing";
 
 type ProductPageProps = { params: Promise<{ slug: string }> };
 
@@ -10,11 +12,17 @@ export function generateStaticParams() { return products.map(({ slug }) => ({ sl
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const product = getProduct((await params).slug);
-  return product ? { title: product.name, description: product.description } : {};
+  if (!product) return {};
+  if (product.slug !== "pulse") return { title: product.name, description: product.description };
+  const content = await getProductMarketingContent("pulse");
+  return { title: content.seo.title ?? content.title, description: content.seo.description ?? content.hero.description };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const product = getProduct((await params).slug);
   if (!product) notFound();
-  return <><ProductHero product={product} />{product.sections.map((section, index) => <ProductSection key={`${section.type}-${index}`} productName={product.name} section={section} />)}</>;
+  const renderedProduct = product.slug === "pulse"
+    ? productWithMarketingContent(product, await getProductMarketingContent("pulse"))
+    : product;
+  return <><ProductHero product={renderedProduct} />{renderedProduct.sections.map((section, index) => <ProductSection key={`${section.type}-${index}`} productName={renderedProduct.name} section={section} />)}</>;
 }

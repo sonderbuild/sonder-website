@@ -6,7 +6,7 @@ import { normalizeProductMarketingContent, type ProductMarketingContent } from "
 import { fetchPublishedSanityProductMarketing } from "./sanity.server";
 import { sourceProductMarketingContent } from "./source-product-marketing";
 
-export type PublicProductRouteId = "pulse" | "frame" | "crate";
+export type PublicProductRouteId = "monitor" | "frame" | "crate";
 type ContentLoader = (productId: PublicProductRouteId) => Promise<unknown>;
 
 export async function getProductMarketingContent(productId: PublicProductRouteId, load: ContentLoader = fetchPublishedSanityProductMarketing): Promise<ProductMarketingContent> {

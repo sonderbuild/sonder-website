@@ -1,6 +1,6 @@
 import { defineField, defineType } from "sanity";
 
-const productIds = ["pulse", "frame", "crate", "cue"];
+const productIds = ["monitor", "frame", "crate", "cue"];
 
 const requiredText = (title: string, max: number) => defineField({
   name: title.toLowerCase(),

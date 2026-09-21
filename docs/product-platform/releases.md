@@ -11,7 +11,7 @@ Each macOS product uses semantic customer versions:
 
 `CFBundleShortVersionString` is the customer version, such as `1.4.0`.
 `CFBundleVersion` is the monotonically increasing build number. A release tag is
-`pulse-v1.4.0`; the matching GitHub Release is `Pulse 1.4.0`.
+`monitor-v1.4.0`; the matching GitHub Release is `Monitor 1.4.0`.
 
 ## Release contract
 

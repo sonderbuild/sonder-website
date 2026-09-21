@@ -1,4 +1,4 @@
-export const canonicalProductIds = ["pulse", "frame", "crate", "cue"] as const;
+export const canonicalProductIds = ["monitor", "frame", "crate", "cue"] as const;
 
 export type CanonicalProductId = (typeof canonicalProductIds)[number];
 export type ProductMarketingFeatureSection =

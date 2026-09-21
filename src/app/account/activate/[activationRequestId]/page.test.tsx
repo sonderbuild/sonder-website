@@ -23,12 +23,12 @@ describe("activation approval page", () => {
     mocks.withAuth.mockResolvedValue({ user: { id: "user_01" }, accessToken: "server-only-token" });
     vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
-      productId: "pulse", name: "Pulse", deviceLabel: "Studio Mac", requestedAt: 1,
+      productId: "monitor", name: "Monitor", deviceLabel: "Studio Mac", requestedAt: 1,
       activeActivationCount: 1, remainingActivationSlots: 2,
     })));
 
     const html = renderToStaticMarkup(await ActivationApprovalPage({ params: Promise.resolve({ activationRequestId: requestId }) }));
-    expect(html).toContain("Activate Pulse?");
+    expect(html).toContain("Activate Monitor?");
     expect(html).toContain("Studio Mac");
     expect(html).toContain("1 of 3 used");
     expect(html).not.toContain("server-only-token");

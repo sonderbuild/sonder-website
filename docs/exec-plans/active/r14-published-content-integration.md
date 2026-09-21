@@ -45,11 +45,13 @@ remains a separate product/security decision.
 
 ## Completion record
 
+### Original R14 publication — 2026-09-14
+
 - The local Studio started against `wbzwvwu5` / public `staging` using only
   ignored `SANITY_PROJECT_ID`, `SANITY_DATASET`, and `SANITY_API_VERSION`
   values.
-- `product-marketing-pulse` is the single published `productMarketing` record.
-  It was seeded from the source fallback; its branded SEO title provides an
+- `product-marketing-pulse` was the single published `productMarketing` record.
+  It was seeded from the source fallback; its branded SEO title provided an
   observable published-content fingerprint.
 - An anonymous query returned the Pulse record. A temporary unpublished probe
   was not returned anonymously and was deleted immediately afterward.
@@ -57,3 +59,14 @@ remains a separate product/security decision.
   200 source-owned Frame and Crate pages, 404 for Cue, and the independent
   `/account` redirect to `/login`. The temporary WorkOS values used only to
   initialize existing local middleware were not saved.
+
+### Monitor rename — 2026-09-21
+
+- The canonical product identity changed from `pulse` / Pulse to
+  `monitor` / Monitor.
+- The `staging` dataset was exported before the CMS mutation.
+- `product-marketing-monitor` was created from the renamed source seed and
+  verified through an anonymous published query.
+- `product-marketing-pulse` is temporarily retained during the website
+  deployment transition and will be removed only after `/apps/monitor` is
+  verified on the deployed staging website.

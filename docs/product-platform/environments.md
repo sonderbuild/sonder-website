@@ -282,7 +282,7 @@ made no production change.
 
 On 2026-09-10, `sonder-api-staging` applied migration `0008` and recorded one
 explicit QA-only mapping from the existing isolated Lemon Test Mode variant to
-canonical `pulse`. This mapping is confined to `sonder-platform-staging`; it
+canonical `monitor`. This mapping is confined to `sonder-platform-staging`; it
 does not establish a production provider representation, map Frame or Crate, or
 derive identity from a Lemon field. Worker version
 `c91c6796-455e-4687-8ff5-592d8a24f0d5` is deployed to staging only.
@@ -294,7 +294,7 @@ website target was Ready Vercel Git Preview
 `staging.sonder.build` assigned. Its runtime log recorded the same-origin
 `GET /api/auth/csrf` as `200`; the login controls enabled and the linked QA
 customer completed Magic Auth. The authenticated `/account` page rendered one
-and only one effective ownership entry, `Pulse` with `Active`, with no Lemon or
+and only one effective ownership entry, `Monitor` with `Active`, with no Lemon or
 other provider identifier shown. This is the canonical catalog name and ID
 projection, not an inferred provider product identity.
 
@@ -308,7 +308,7 @@ the current staging login presented Google and Apple according to the approved
 staging configuration.
 
 The privacy-safe D1 aggregate snapshot before the authenticated reads was 2
-purchases, 4 entitlements, 2 licenses, 6 device activations, and one `pulse`
+purchases, 4 entitlements, 2 licenses, 6 device activations, and one `monitor`
 mapping. The post-read snapshot was identical. The post query reported
 `rows_written: 0` and `changed_db: false`; licenses and device activations were
 therefore unchanged. These requests created no entitlement, license, or

@@ -1,8 +1,8 @@
 {
-  "_id": "product-marketing-pulse",
+  "_id": "product-marketing-monitor",
   "_type": "productMarketing",
-  "productId": "pulse",
-  "title": "Pulse",
+  "productId": "monitor",
+  "title": "Monitor",
   "tagline": "Understand your Mac.",
   "hero": {
     "description": "A quiet system monitoring and insights app designed to reveal what is happening beneath your workflow."
@@ -13,47 +13,47 @@
       "_type": "marketingStatement",
       "eyebrow": "A considered utility",
       "statement": "Understanding your Mac should not mean watching it all day.",
-      "description": "Pulse turns the activity beneath your workflow into useful context—not a stream of alerts. It stays clear, quiet, and ready when a closer look matters."
+      "description": "Monitor turns the activity beneath your workflow into useful context—not a stream of alerts. It stays clear, quiet, and ready when a closer look matters."
     },
     {
       "_key": "live-awareness",
       "_type": "marketingFeature",
       "eyebrow": "Live system awareness",
       "title": "See the state of your Mac as it changes.",
-      "description": "Pulse brings the signals worth noticing into one calm view, so CPU, memory, storage, and network activity can be understood without digging through utilities or interrupting the task at hand."
+      "description": "Monitor brings the signals worth noticing into one calm view, so CPU, memory, storage, and network activity can be understood without digging through utilities or interrupting the task at hand."
     },
     {
       "_key": "historical-patterns",
       "_type": "marketingFeature",
       "eyebrow": "Historical patterns",
       "title": "Notice the shape of a day, not just a moment.",
-      "description": "A single reading rarely tells the whole story. Pulse makes room for patterns to emerge, helping you understand what is normal for your Mac and what has genuinely changed."
+      "description": "A single reading rarely tells the whole story. Monitor makes room for patterns to emerge, helping you understand what is normal for your Mac and what has genuinely changed."
     },
     {
       "_key": "clear-diagnostics",
       "_type": "marketingFeature",
       "eyebrow": "Clear diagnostics",
       "title": "Find the cause without the noise.",
-      "description": "When something feels off, Pulse is there to help make sense of it. The goal is not more data, but a clearer path from a question to an answer."
+      "description": "When something feels off, Monitor is there to help make sense of it. The goal is not more data, but a clearer path from a question to an answer."
     },
     {
       "_key": "thoughtful-presentation",
       "_type": "marketingFeature",
       "eyebrow": "Thoughtful presentation",
       "title": "A technical tool with a quieter presence.",
-      "description": "Pulse is designed to be useful at a glance and unobtrusive the rest of the time. Its information is precise, but its presence is deliberately restrained."
+      "description": "Monitor is designed to be useful at a glance and unobtrusive the rest of the time. Its information is precise, but its presence is deliberately restrained."
     },
     {
       "_key": "in-direction",
       "_type": "marketingStatement",
       "eyebrow": "In direction",
       "statement": "A clearer relationship with the machine you use every day.",
-      "description": "Pulse is being shaped as a companion for people who care about their tools: a more attentive way to understand a Mac without asking it to become the centre of attention."
+      "description": "Monitor is being shaped as a companion for people who care about their tools: a more attentive way to understand a Mac without asking it to become the centre of attention."
     }
   ],
   "faq": [],
   "seo": {
-    "title": "Pulse — sonder",
+    "title": "Monitor — sonder",
     "description": "A quiet system monitoring and insights app designed to reveal what is happening beneath your workflow."
   }
 }

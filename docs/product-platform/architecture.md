@@ -2,7 +2,7 @@
 
 ## Goal
 
-Provide a small shared foundation for Pulse, Frame, Crate, Cue, and future
+Provide a small shared foundation for Monitor, Frame, Crate, Cue, and future
 sonder products. It must serve product needs without replacing product-specific
 code or becoming a second application framework.
 

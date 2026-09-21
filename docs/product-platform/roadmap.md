@@ -107,7 +107,7 @@ scope.
 ## R8 — Read-only product ownership projection
 
 **Staging acceptance complete; production untouched.**
-`sonder-system` establishes the provider-neutral `pulse`, `frame`, and `crate`
+`sonder-system` establishes the provider-neutral `monitor`, `frame`, and `crate`
 catalog and the separate customer-products contract. The account page consumes
 that contract only after the existing session request confirms a linked
 customer, through a server-side no-store request. It renders only active
@@ -117,12 +117,12 @@ render provider identifiers, purchases, historical/revoked ownership, licenses,
 activation/device data, downloads, billing, or controls.
 
 Staging has one explicit QA-only Lemon Test Mode variant mapping to canonical
-`pulse`; it is not production catalog configuration, and Frame and Crate remain
+`monitor`; it is not production catalog configuration, and Frame and Crate remain
 unmapped. The accepted website target is Ready Preview
 `BRQ3Yo9tL2qPTGYb6CYEWsXj8yjq` at staging commit
 `d64e4288524971628f2128f67cdb15c00298d0b7`, also assigned to
 `staging.sonder.build`. The linked QA Magic Auth session rendered exactly one
-`Pulse — Active` entry. The before/after staging D1 aggregates were identical:
+`Monitor — Active` entry. The before/after staging D1 aggregates were identical:
 2 purchases, 4 entitlements, 2 licenses, and 6 device activations; the
 post-read query recorded zero writes. Production remains untouched.
 

@@ -16,14 +16,14 @@ describe("activation approval boundary", () => {
   it("uses a server bearer token only for the R10 preview and accepts only provider-neutral fields", async () => {
     vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
     const fetchMock = vi.fn().mockResolvedValue(Response.json({
-      productId: "pulse", name: "Pulse", deviceLabel: "Studio Mac", requestedAt: 1,
+      productId: "monitor", name: "Monitor", deviceLabel: "Studio Mac", requestedAt: 1,
       activeActivationCount: 1, remainingActivationSlots: 2,
     }));
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(previewActivationRequest("server-only-token", requestId)).resolves.toEqual({
       kind: "ready", preview: {
-        productId: "pulse", name: "Pulse", deviceLabel: "Studio Mac", requestedAt: 1,
+        productId: "monitor", name: "Monitor", deviceLabel: "Studio Mac", requestedAt: 1,
         activeActivationCount: 1, remainingActivationSlots: 2,
       },
     });

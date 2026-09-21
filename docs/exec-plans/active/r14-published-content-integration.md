@@ -67,6 +67,10 @@ remains a separate product/security decision.
 - The `staging` dataset was exported before the CMS mutation.
 - `product-marketing-monitor` was created from the renamed source seed and
   verified through an anonymous published query.
-- `product-marketing-pulse` is temporarily retained during the website
-  deployment transition and will be removed only after `/apps/monitor` is
-  verified on the deployed staging website.
+- Website commit `c126339` deployed successfully through the protected Vercel
+  staging environment. The authenticated runtime rendered `/apps/monitor`
+  with the Monitor marketing content, while `/apps/pulse` no longer rendered
+  the former Pulse product page.
+- After that runtime verification, `product-marketing-pulse` was deleted.
+  A final anonymous query confirmed `product-marketing-monitor` as the sole
+  published `productMarketing` record.

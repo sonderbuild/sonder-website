@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "harnessVersion": "1.0.1",
+  "harnessVersion": "1.2.0",
   "adapters": [
     "codex"
   ],
@@ -26,7 +26,7 @@
     },
     ".development-harness/managed/core/policies/roadmap-and-autonomy.md": {
       "source": "core/policies/roadmap-and-autonomy.md",
-      "sha256": "c12f477317508e4811d9a9a74bb3c41c8ee98eeb4354e9393927339d9beacbb1"
+      "sha256": "02be0d0b80bfb5c302400a254c65219f80bdf06d44742d08a6e0e6c4a291a271"
     },
     ".development-harness/managed/core/policies/runtime-evidence.md": {
       "source": "core/policies/runtime-evidence.md",
@@ -58,7 +58,7 @@
     },
     ".development-harness/managed/core/document-schemas/roadmap.md": {
       "source": "core/document-schemas/roadmap.md",
-      "sha256": "efd2045bf01fd197582ef6615bdd1aee867f4a6273ee34c471f4aead9e8dcf4a"
+      "sha256": "9c14a292ba99734af6c6f42c5f3ea9e009fb3a52ab456d667cd1eca337092b0c"
     },
     ".development-harness/managed/profiles/web-common/PROFILE.md": {
       "source": "profiles/web-common/PROFILE.md",

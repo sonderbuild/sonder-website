@@ -9,6 +9,11 @@ Use explicit statuses such as `IDEA`, `NEEDS_PRODUCT_DECISION`, `BLOCKED`,
 unless the project intentionally supports concurrent tracks. Only ready work is
 eligible for autonomous selection.
 
+When a project adopts a task board, `ROADMAP.md` may remain focused on strategic
+outcomes, milestones, sequencing, and major dependencies while the board owns
+the live state of actionable cards. Do not duplicate every card as a roadmap
+checkbox or infer delivery evidence from board status alone.
+
 Mark an outcome done only after the delivery standard has been met. Split it or
 record a blocker when repository evidence shows the original scope is no longer
 coherent.

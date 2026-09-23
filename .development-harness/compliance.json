@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 3,
+  "operatorCountry": "DE",
+  "marketScope": {
+    "mode": "global"
+  },
+  "productTypes": [
+    "website-web-service",
+    "ios-app",
+    "macos-app",
+    "max-for-live-product"
+  ],
+  "distributionChannels": [
+    "public-website",
+    "direct-digital-sale",
+    "apple-ios-app-store"
+  ],
+  "directCommerce": {
+    "status": "planned"
+  },
+  "checkout": {
+    "provider": "lemon-squeezy",
+    "merchantOfRecord": true,
+    "integrationMode": "unknown"
+  },
+  "facts": {
+    "accounts": true,
+    "analytics": null,
+    "advertising": false,
+    "telemetry": null,
+    "userGeneratedContent": false,
+    "recurringContracts": null,
+    "ongoingPaidAccess": null,
+    "immediateDigitalDelivery": null,
+    "ongoingDigitalProvision": null,
+    "bfsgEmployeesBelow10": null,
+    "bfsgTurnoverAtMost2m": null,
+    "bfsgBalanceSheetAtMost2m": null
+  }
+}

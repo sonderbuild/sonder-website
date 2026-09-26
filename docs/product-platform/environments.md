@@ -30,6 +30,60 @@ environment.
   staging account origins. Native-app endpoints use their own authorization and
   must not depend on browser CORS as an access control.
 
+## Website access protection and authentication evidence — 2026-09-26
+
+The project owner enabled Vercel Authentication with **Require Log In** and
+**All Deployments** for both `sonder-website` and `sonder-admin`. Password
+Protection remains unused. This temporarily keeps anonymous visitors from the
+website while authorized project members develop and test it, and keeps the
+admin deployment protected, until the public website has its final legal launch
+surface, including Impressum and privacy information. These settings and the
+browser observations below were reported from Vercel and a private browser;
+this record does not independently recheck the provider dashboards.
+
+The observed Vercel domain assignments were:
+
+| Domain | Deployment target |
+| --- | --- |
+| `staging.sonder.build` | `staging` |
+| `www.sonder.build` | Production |
+| `sonder.build` | Production |
+| `sonder-website.vercel.app` | Production |
+
+In a private browser without an existing Vercel session,
+`https://sonder.build` redirected to Vercel Authentication. After successful
+Vercel Authentication, the browser reached the underlying Production website.
+That Production deployment returned the site's own 404 for `/login`; this was
+not a Vercel Authentication failure. Local Git inspection shows that the Magic
+Auth (`b0a6078`), Google social sign-in (`ebcf378`), and browser activation
+approval (`de7b17a`) commits are ancestors of `staging` but not of `main` or
+`origin/main`. The absent Production login route is consistent with this
+intentional branch/deployment skew; it does not establish broken Production
+authentication.
+
+After passing Vercel Authentication, the project owner opened
+`https://staging.sonder.build/login`. The sonder login rendered Google, Apple,
+and email/Magic Auth controls. The observed Google social sign-in completed the
+WorkOS/browser redirect and landed on `/account`. This verifies compatibility
+of that tested browser callback with Vercel Authentication; it does not verify
+every provider setting, negative path, or account state.
+
+Current website route inspection found no inbound server-to-server provider
+webhook handler. The route inventory consists of browser CSRF and Magic Auth
+requests (`/api/auth/csrf`, `/api/auth/magic/request`,
+`/api/auth/magic/verify`), social start and browser callback
+(`/api/auth/social/[provider]/start`, `/api/auth/social/callback`), and
+authenticated browser account actions
+(`/api/account/activation-requests/[activationRequestId]/[action]`,
+`/api/account/activations/[activationId]/revoke`). The social callback receives
+the returning user's browser request and exchanges its code server-side with
+WorkOS; it is not a provider-to-website webhook. Actual provider webhooks are
+outside the website boundary. No Deployment Protection bypass exception is
+currently required for an inbound website webhook.
+
+This evidence work made no Production promotion or deployment and changed no
+Vercel or WorkOS configuration.
+
 ## D1 lifecycle
 
 - The Worker binding is `PLATFORM_DB`; the intended remote database name is

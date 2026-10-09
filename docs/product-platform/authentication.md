@@ -149,3 +149,13 @@ The app opens the system browser, uses an authorization-code flow with PKCE,
 and receives a one-use code through its registered custom URL callback. The app
 exchanges that code with the Worker; it does not receive a browser session or a
 long-lived customer credential.
+
+## Auth request body boundary
+
+The shared `jsonBody` helper enforces the existing 1,024-byte JSON-object policy
+on actual UTF-8 bytes, including missing/understated Content-Length and chunked
+bodies. It cancels oversized streams and rejects malformed JSON/UTF-8, non-object
+JSON and unreadable bodies. Existing callers return their `invalidRequest` error;
+CSRF checks, sessions and provider/customer semantics remain unchanged. SEC-902
+local regressions cover exact boundaries and streaming; deployed auth remains a
+separate registered staging gate.

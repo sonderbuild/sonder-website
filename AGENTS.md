@@ -31,6 +31,12 @@ service/repository ownership boundaries, shared lifecycle semantics, and
 environment topology live in the `sonder-system` repository when that checkout
 is available. Do not copy those system documents here.
 
+Before shared platform infrastructure or dependent deployment work, read the
+[canonical execution roadmap](../sonder-system/docs/roadmaps/platform-infrastructure-execution.md)
+for accepted boundaries, API/consumer ordering, evidence and the single next
+action. Keep website implementation plans here and link shared authority rather
+than copying its execution roadmap.
+
 The API's executable implementation remains authoritative for its behavior;
 `sonder-system` records only the facts shared across repositories. If website
 evidence conflicts with `sonder-system`, reconcile and record the mismatch

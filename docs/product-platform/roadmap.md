@@ -161,45 +161,24 @@ restored. Repeat and cross-customer paths are deterministic API evidence because
 the staging browser session has one linked QA identity; no second identity was
 fabricated. Production is untouched.
 
-## Future internal platform work
+## Internal Admin and fresh-target handoff
 
-### Sonder Admin — internal administration console
+sonder Admin is implemented in the separate `sonder-admin` repository, with
+historically accepted reads, contracted revoke/retry and R16 triage. The former
+IDEA description here was obsolete; shared Decisions 0006–0009/0015 and the owner
+repository define current scope. This website does not own that backlog.
 
-**Status: IDEA — unscheduled; no implementation is authorized.** Sonder Admin
-is a future, separate internal web application at the default hostname
-`admin.sonder.build`. It is deliberately unnumbered: this future track does
-not change the ordering of R11B and R12.
-
-Sonder Admin is an internal operational surface for customer lookup;
-identity/customer linkage inspection; commerce-projection inspection;
-entitlement, license, and activation inspection; support operations; and
-webhook, outbox, and audit visibility. It may eventually expose explicitly
-approved operational mutations. The initial implementation must be read-mostly;
-each mutation capability is added individually only after its contract exists.
-
-Ownership remains deliberately split:
-
-- Sonder Admin is a separate internal web application/project, not an extension
-  of the public `sonder-website`.
-- `sonder-api` remains the authority for platform, customer, and license
-  mutations.
-- `sonder-system` owns shared admin-operation semantics that cross repository
-  boundaries.
-- Lemon remains the commerce authority, and WorkOS remains the identity
-  authority.
-- The admin UI never becomes a data source of truth.
-
-The future implementation requires a separate Vercel project from the public
-website, deployment-level access protection, and a second application-level
-Sonder admin authorization layer. That layer must use explicit allowlisted
-admin identities or roles; ordinary customer accounts cannot become admins.
-Sensitive mutations may require recent or step-up authentication, and every
-material mutation must be audited.
-
-Admin API endpoints must be least-privilege and purpose-specific. Sonder Admin
-must not offer arbitrary SQL, direct browser database credentials, or provider
-secrets in the browser. Staging and production remain isolated. Destructive
-production operations require explicit authorization.
+**BLOCKED by fresh API acceptance:** reconfigure and verify existing session,
+products/licensing, browser approval and customer revocation against the accepted
+Greenfield staging lineage. Follow system M2/M4–M6 dependencies and the bounded
+0019 exception; do not rewrite working UI or call historical staging new-lineage
+acceptance. Owner acceptance: exact origin/client and cookie isolation, no-store
+server-only API calls, error/denial compatibility, CSRF revoke, approval without
+ticket issuance, and full native completion. Use owner registered tests plus
+separately authorized synthetic staging browser/API evidence. No production rollout.
+[Guided setup](../../../sonder-api/docs/setup/README.md) supplies configuration
+navigation; the [system roadmap](../../../sonder-system/docs/roadmaps/platform-infrastructure-execution.md)
+owns shared sequencing and exact external prerequisites.
 
 ## Production gates
 

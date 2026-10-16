@@ -5,7 +5,8 @@
 `sonder.build` is sonder's Vercel-hosted Next.js public studio site and
 authenticated account presentation. It owns marketing/UI rendering, the custom
 WorkOS Magic Auth interface, the sealed server-side website session, and the
-minimal account diagnostic surface. It is not the commerce, entitlement,
+account ownership/licensing and activation approval/management surfaces. It is
+not the commerce, entitlement,
 licensing, webhook, email-delivery, or platform-data service.
 
 - [Product-platform index](docs/product-platform/README.md) maps the
@@ -17,7 +18,8 @@ licensing, webhook, email-delivery, or platform-data service.
 - [Environments](docs/product-platform/environments.md) owns local, preview,
   staging, and production safety boundaries.
 - [Roadmap](docs/product-platform/roadmap.md) owns implementation status. It
-  records R6 as staging-verified; there is no committed active execution plan.
+  records R6–R8 and R11A/B as historically staging-verified; there is no committed
+  active execution plan.
   Production gates require explicit external authority and are never selected
   autonomously from local dirty work.
 - Decisions, security guidance, runbooks, and licensing/data-model details are
@@ -45,11 +47,11 @@ explicitly rather than silently choosing one source.
 ## Website and API boundary
 
 The website owns public pages, account presentation, server-side WorkOS session
-handling, and its server-to-server call to the documented
-`GET /v1/customer/session` endpoint. `sonder-api` owns verified customer
-identity resolution, D1, Lemon Squeezy and Resend webhooks, commerce
-projection, entitlements, licensing, activation, signing keys, provider
-credentials, and operational email handling.
+handling, and server-to-server consumption of customer session/products/licensing,
+activation approval and customer revocation contracts. `sonder-api` owns verified
+customer identity resolution, D1, Lemon Squeezy webhooks, commerce projection,
+entitlements, licensing, activation, signing keys and provider credentials.
+Resend delivery is an API-owned future seam, not an implemented integration.
 
 Vercel never receives Lemon, Worker, GitHub App, D1, Resend, or entitlement
 signing secrets. A checkout return, browser-provided customer identity, local
@@ -63,12 +65,12 @@ production evidence.
   this Next.js version has breaking changes.
 - Local development is `pnpm dev`; Vercel previews are protected marketing/UI
   review only and have no shared production Worker, customer data, or commerce.
-- Staging uses separate WorkOS test, Worker, D1, Lemon Test Mode, and Resend
-  test resources. Production deployment, purchases, email, webhook replay, and
+- Staging uses separate WorkOS test, Worker, D1 and Lemon Test Mode resources. Production deployment, purchases, email, webhook replay, and
   other irreversible external operations require explicit authorization.
-- Password, social login, hosted AuthKit fallback, passkey UI, customer portal
-  data, account claims, native OAuth, and licensing changes are outside the
-  current R6 website boundary.
+- Passwords, additional social providers, hosted AuthKit fallback, passkey UI,
+  new customer portal capabilities, account claims, native OAuth and changes to
+  shared licensing semantics are outside the current accepted website scope.
+  Existing staging Google/Apple social flows retain their documented boundaries.
 
 ## Skills, validation, and shared workflow
 

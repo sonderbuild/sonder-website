@@ -1,18 +1,20 @@
 # sonder product platform
 
-This directory is the source of truth for systems shared by sonder products. It
-records decisions before code is written, so products can reuse the platform
-without turning sonder into a general-purpose SaaS operation.
+This directory owns website product/platform documentation. sonder-system owns
+shared cross-repository contracts and decisions; sonder-api owns service behavior.
+Use the roadmap for implemented versus historically accepted versus fresh-target
+blocked status; the original design scope below is retained as history.
 
 ## Current decisions
 
-- Keep the existing split: the public site and future account UI stay on
+- Keep the existing split: the public site and implemented account UI stay on
   Vercel; `api.sonder.build` remains the Cloudflare Worker API.
 - Start the platform database with Cloudflare D1. Reconsider Neon only when its
   specific Postgres capabilities justify an additional operational vendor.
-- Do not ship a customer account with the first website release. When the first
-  paid product needs it, use managed authentication rather than a custom
-  password or session system.
+- The original first-website-release scope excluded accounts. Custom WorkOS Magic
+  Auth and account/activation surfaces are now implemented and historically staging
+  accepted; fresh-target and production acceptance remain separate. No custom
+  password service or expanded account scope follows.
 - Lemon Squeezy is authoritative for commerce. sonder owns entitlement,
   activation, support-case, and audit data.
 - Support mail always becomes a private support case. Only actionable bugs and
@@ -36,8 +38,8 @@ without turning sonder into a general-purpose SaaS operation.
 | [Decisions](./decisions/) | Short records of consequential choices. |
 | [Runbooks](./runbooks/) | Procedures for incidents and exceptional cases. |
 
-## Architecture milestone scope
+## Original architecture milestone scope — historical
 
 This documentation does not add D1, authentication, account UI, Lemon webhooks,
-or licensing endpoints. Select the next implementation milestone only after this
-design is reviewed.
+or licensing endpoints. Current implementation and remaining acceptance are recorded in the roadmap;
+do not restart this completed design milestone.

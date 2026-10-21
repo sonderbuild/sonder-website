@@ -10,12 +10,13 @@ the decisions. No production platform code.
 
 ## R2 — Platform foundations
 
-**In progress.** D1 migrations, the core data model, audit events,
-webhook-receipt idempotency, local test setup, and the typed persistence
-boundary are implemented. The required remote follow-up is to provision
-separate staging/production D1 and KV resources, configure named Worker
-environments with those IDs, and apply the forward-only migration. No customer
-account has been added.
+**Historical foundation implemented; fresh-target acceptance blocked.** The core
+D1 model, audit/idempotency and typed persistence boundary exist, with later
+historical staging acceptance recorded in R3 onward. The original provisioning
+follow-up is not a request to recreate those resources. Current Greenfield API
+schema/genesis and consumer retargeting are unaccepted; follow the fresh-target
+handoff below and system M1–M6 gates. No new customer or production acceptance is
+inferred from existing code or historical resources.
 
 ## R3 — Lemon test-mode commerce ingestion
 

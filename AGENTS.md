@@ -18,8 +18,10 @@ licensing, webhook, email-delivery, or platform-data service.
 - [Environments](docs/product-platform/environments.md) owns local, preview,
   staging, and production safety boundaries.
 - [Roadmap](docs/product-platform/roadmap.md) owns implementation status. It
-  records R6–R8 and R11A/B as historically staging-verified; there is no committed
-  active execution plan.
+  records R6–R8 and R11A/B as historically staging-verified. Completed R6.3 and
+  R7 plans are archived under docs/exec-plans/completed with link-preserving
+  pointers at their former paths; other retained plans record historical work.
+  Fresh Greenfield consumer acceptance remains blocked by the accepted API target.
   Production gates require explicit external authority and are never selected
   autonomously from local dirty work.
 - Decisions, security guidance, runbooks, and licensing/data-model details are

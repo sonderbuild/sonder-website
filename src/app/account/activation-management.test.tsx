@@ -1,13 +1,23 @@
 import { isValidElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CustomerLicensingProduct } from "@/lib/customer-licensing";
+import type { CustomerLicensingProduct, CustomerLicensingError } from "@/lib/customer-licensing";
 
-const hooks = vi.hoisted(() => ({ state: [] as unknown[], cursor: 0, refresh: vi.fn(), read: vi.fn(), transition: Promise.resolve() as Promise<unknown> }));
+const hooks = vi.hoisted(() => ({ state: [] as unknown[], cursor: 0, refresh: vi.fn(), read: vi.fn(), transition: Promise.resolve() as Promise<unknown>, effects: new Map<number, { deps: unknown[]; cleanup?: () => void }>(), commits: [] as Array<() => void>, updates: vi.fn() }));
 // Node-only interaction harness: exercise the real component's callbacks and JSX
 // without adding a DOM dependency. This is not browser/accessibility evidence.
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
+  useEffect: (effect: () => void | (() => void), deps: unknown[]) => {
+    const slot = hooks.cursor++;
+    const previous = hooks.effects.get(slot);
+    if (!previous || deps.some((value, index) => !Object.is(value, previous.deps[index]))) {
+      hooks.commits.push(() => {
+        previous?.cleanup?.();
+        hooks.effects.set(slot, { deps, cleanup: effect() || undefined });
+      });
+    }
+  },
   useRef: (initial: unknown) => {
     const slot = hooks.cursor++;
     if (!(slot in hooks.state)) hooks.state[slot] = { current: initial };
@@ -24,7 +34,7 @@ vi.mock("react", async original => ({
   useState: (initial: unknown) => {
     const slot = hooks.cursor++;
     if (!(slot in hooks.state)) hooks.state[slot] = initial;
-    return [hooks.state[slot], (value: unknown) => { hooks.state[slot] = value; }];
+    return [hooks.state[slot], (value: unknown) => { hooks.updates(); hooks.state[slot] = value; }];
   },
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: hooks.refresh }) }));
@@ -39,13 +49,19 @@ const confirmation = "Revoke activation for Studio Mac? This frees its activatio
 let confirm: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-  hooks.state = []; hooks.cursor = 0; hooks.refresh.mockReset(); hooks.read.mockReset(); hooks.transition = Promise.resolve();
+  hooks.state = []; hooks.cursor = 0; hooks.refresh.mockReset(); hooks.read.mockReset(); hooks.transition = Promise.resolve(); hooks.effects.clear(); hooks.commits = []; hooks.updates.mockReset();
   confirm = vi.fn().mockReturnValue(true);
   vi.stubGlobal("window", { confirm });
 });
-afterEach(() => vi.unstubAllGlobals());
-function render(input = products) { hooks.cursor = 0; return ActivationManagement({ products: input }); }
-function markup(input = products) { return renderToStaticMarkup(render(input)); }
+function unmount() { for (const effect of hooks.effects.values()) effect.cleanup?.(); hooks.effects.clear(); }
+afterEach(() => { unmount(); vi.unstubAllGlobals(); });
+function render(input = products, initialError?: CustomerLicensingError) {
+  hooks.cursor = 0;
+  const tree = ActivationManagement({ products: input, initialError });
+  for (const commit of hooks.commits.splice(0)) commit();
+  return tree;
+}
+function markup(input = products, initialError?: CustomerLicensingError) { return renderToStaticMarkup(render(input, initialError)); }
 function findButton(tree: unknown, label?: string): ReactElement<{onClick: () => Promise<void>; disabled: boolean}> | undefined {
   if (Array.isArray(tree)) return tree.map(child => findButton(child, label)).find(Boolean);
   if (!isValidElement<{children?: unknown}>(tree)) return;
@@ -241,4 +257,100 @@ it("ignores a late recovery result after newer server props have arrived", async
   markup(newer);
   complete({ kind: "ready", products }); await hooks.transition;
   expect(markup(newer)).toContain("0 of 3 used"); expect(markup(newer)).not.toContain("Studio Mac");
+});
+
+
+const emptyProducts: CustomerLicensingProduct[] = [];
+async function retry(error: CustomerLicensingError = "licensingUnavailable") {
+  const button = findButton(render(emptyProducts, error), "Try again");
+  if (!button) throw new Error("missing retry");
+  button.props.onClick(); await hooks.transition;
+}
+
+describe("initial activation-list retry", () => {
+  it.each(["licensingUnavailable", "authenticationUnavailable"] as const)("offers only an explicit read retry for %s, without a mutation", async error => {
+    const fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock);
+    expect(markup(emptyProducts, error)).toContain("Try again"); expect(hooks.read).not.toHaveBeenCalled();
+    hooks.read.mockResolvedValue({ kind: "ready", products }); await retry(error);
+    expect(markup(emptyProducts, error)).toContain("Activation details loaded.");
+    expect(markup(emptyProducts, error)).toContain("1 of 3 used");
+    expect(findButton(render(emptyProducts, error), "Try again")).toBeUndefined();
+    expect(hooks.read).toHaveBeenCalledOnce(); expect(fetchMock).not.toHaveBeenCalled(); expect(confirm).not.toHaveBeenCalled();
+    expect(hooks.refresh).not.toHaveBeenCalled();
+  });
+
+  it("guards repeated clicks, announces loading and focuses the resulting feedback", async () => {
+    let complete!: (value: {kind: "ready"; products: CustomerLicensingProduct[]}) => void;
+    hooks.read.mockImplementation(() => new Promise(resolve => { complete = resolve; }));
+    const initial = render(emptyProducts, "licensingUnavailable");
+    const feedbackElement = (initial.props.children as unknown[]).find(child => isValidElement<{role: string}>(child) && child.props.role === "alert") as ReactElement<{ref: {current: {focus: (options: unknown) => void} | null}; tabIndex: number}>;
+    const focus = vi.fn(); feedbackElement.props.ref.current = { focus };
+    const button = findButton(initial, "Try again")!;
+    button.props.onClick(); button.props.onClick();
+    expect(hooks.read).toHaveBeenCalledOnce();
+    expect(markup(emptyProducts, "licensingUnavailable")).toContain("Refreshing activation status…");
+    expect(markup(emptyProducts, "licensingUnavailable")).toContain('aria-busy="true"');
+    expect(findButton(render(emptyProducts, "licensingUnavailable"), "Try again")?.props.disabled).toBe(true);
+    expect(focus).not.toHaveBeenCalled();
+    complete({ kind: "ready", products }); await hooks.transition;
+    expect(markup(emptyProducts, "licensingUnavailable")).toContain('role="status"');
+    expect(feedbackElement.props.tabIndex).toBe(-1);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+  });
+
+  it("keeps network failure retryable without rendering an invented empty account", async () => {
+    hooks.read.mockRejectedValueOnce(new Error("offline")); await retry();
+    expect(markup(emptyProducts, "licensingUnavailable")).toContain("We could not refresh activation status");
+    expect(markup(emptyProducts, "licensingUnavailable")).not.toContain("No active products");
+    expect(findButton(render(emptyProducts, "licensingUnavailable"), "Try again")).toBeDefined();
+    hooks.read.mockResolvedValue({ kind: "ready", products: [] }); await retry();
+    expect(markup(emptyProducts, "licensingUnavailable")).toContain("No active products");
+    expect(markup(emptyProducts, "licensingUnavailable")).toContain("Activation details loaded.");
+  });
+
+  it.each([
+    ["unauthenticated", "Your session has expired"], ["accountUnlinked", "No sonder customer account is connected"],
+    ["accountDisabled", "This customer account is currently unavailable"], ["emailNotVerified", "A verified email is required"],
+    ["activationUnavailable", "We could not refresh activation status"], ["stepUpRequired", "We could not refresh activation status"],
+  ] as const)("does not offer Try again for %s", async (error, message) => {
+    expect(findButton(render(emptyProducts, error), "Try again")).toBeUndefined();
+    hooks.read.mockResolvedValue({ kind: "error", error }); await retry();
+    const html = markup(emptyProducts, "licensingUnavailable");
+    expect(html).toContain(message); expect(html).not.toContain("Try again"); expect(html).not.toContain("No active products");
+    expect(html.includes('href="/login"')).toBe(error === "unauthenticated");
+  });
+
+  it("ignores a late success after the server reports an authentication/linkage change", async () => {
+    let complete!: (value: {kind: "ready"; products: CustomerLicensingProduct[]}) => void;
+    hooks.read.mockImplementation(() => new Promise(resolve => { complete = resolve; }));
+    findButton(render(emptyProducts, "licensingUnavailable"), "Try again")!.props.onClick();
+    markup(emptyProducts, "accountUnlinked"); // Same products, different authoritative account state.
+    complete({ kind: "ready", products }); await hooks.transition;
+    const html = markup(emptyProducts, "accountUnlinked");
+    expect(html).toContain("No sonder customer account is connected"); expect(html).not.toContain("Studio Mac");
+    expect(html).not.toContain("Activation details loaded."); expect(html).not.toContain("Try again");
+  });
+
+  it("does not dispatch a read result after navigation unmounts the account", async () => {
+    let complete!: (value: {kind: "ready"; products: CustomerLicensingProduct[]}) => void;
+    hooks.read.mockImplementation(() => new Promise(resolve => { complete = resolve; }));
+    findButton(render(emptyProducts, "licensingUnavailable"), "Try again")!.props.onClick();
+    unmount(); hooks.updates.mockClear();
+    complete({ kind: "ready", products }); await hooks.transition;
+    expect(hooks.updates).not.toHaveBeenCalled();
+  });
+  it("lets a new account scope finish a retry while an old read remains pending", async () => {
+    let completeOld!: (value: {kind: "ready"; products: CustomerLicensingProduct[]}) => void;
+    hooks.read.mockImplementationOnce(() => new Promise(resolve => { completeOld = resolve; }));
+    findButton(render(emptyProducts, "licensingUnavailable"), "Try again")!.props.onClick();
+    const oldTransition = hooks.transition;
+    markup(emptyProducts, "authenticationUnavailable");
+    expect(findButton(render(emptyProducts, "authenticationUnavailable"), "Try again")?.props.disabled).toBe(false);
+    hooks.read.mockResolvedValue({ kind: "ready", products }); await retry("authenticationUnavailable");
+    expect(markup(emptyProducts, "authenticationUnavailable")).toContain("1 of 3 used");
+    expect(markup(emptyProducts, "authenticationUnavailable")).not.toContain("Refreshing activation status…");
+    completeOld({ kind: "ready", products: [] }); await oldTransition;
+    expect(markup(emptyProducts, "authenticationUnavailable")).toContain("1 of 3 used");
+  });
+
 });

@@ -206,6 +206,61 @@ credentialed session-expiry/linkage handling, and fresh-target staging acceptanc
 remain UNRUN/blocked under the existing roadmap. Node/render/build results do not
 close them. No credentials, infrastructure, deployment, production action or push.
 
-Next product task: make an initial activation-list loading failure explicitly
-retryable using this existing read action; keep its error and auth states distinct
+Selected follow-up at that checkpoint (completed locally below): make an initial
+activation-list loading failure explicitly retryable using this existing read action; keep its error and auth states distinct
 without adding endpoints or automatically repeating mutations.
+
+
+## Local initial activation-list retry — 2026-10-23
+
+**IMPLEMENTED / LOCALLY VERIFIED; browser/staging acceptance UNRUN.** Baseline
+`6f939ea`. The account product section now offers `Try again` for initial
+`licensingUnavailable` and `authenticationUnavailable` failures. It reuses
+`refreshActivationStatus` and the existing validated, authenticated, no-store
+`GET /v1/customer/licenses` path. No new endpoint, parser, shared contract,
+identity selection or API mutation. Current system contracts and API behavior
+remain compatible; no mismatch was found.
+
+Authentication, customer linkage, disabled-account, email-verification,
+authorization and step-up error meanings remain distinct. Those denials do not
+expose the initial-load retry. An expired session offers `Sign in again`.
+Successful reads render only returned products, licenses, activations and slot
+counts; failures never become an empty-account success or revoke confirmation.
+Existing uncertain-revocation recovery retains its separate wording and action.
+
+The native keyboard button is disabled and exposes `aria-busy` while reading.
+Loading uses a status announcement; completion/error feedback receives
+programmatic focus with `tabIndex=-1`. Immediate request guards prevent repeated
+clicks from dispatching duplicates. Results belong to their originating server
+props/error scope and are discarded after scope changes or unmount. An obsolete
+pending read cannot hold a newer scope busy, overwrite its result or clear its
+request guard. No effect automatically reads or repeats a mutation.
+
+Validation:
+
+- Focused `pnpm test src/app/account/activation-management.test.tsx src/app/account/page.test.tsx src/app/account/actions.test.ts src/lib/customer-licensing.test.ts`
+  — **142 PASS / 4 files**. Covers successful retry, repeated clicks, busy/focus
+  behavior, network failure, session expiry, linkage/authorization distinctions,
+  empty and changed server state, stale responses, unmount and no second revoke.
+- Registered `pnpm test` — **209 PASS / 14 files**; `pnpm lint` — **PASS**.
+  The full checks included concurrent unrelated marketing/catalog working-tree
+  changes, which were left untouched and are excluded from this account commit.
+- Supported production build
+  `NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID='' SANITY_DATASET='' SONDER_API_ORIGIN='' pnpm build --webpack`
+  — **PASS**, including TypeScript and page generation. This uses the documented
+  supported fallback for the previously recorded local Turbopack worker-port
+  restriction; it does not establish a passing default Turbopack build.
+- Scoped `git diff --check` and final self-review — **PASS**. Component tests use
+  the existing Node hook/router harness; server-action, parser and page tests use
+  mocked authentication/fetch. No real API, database or provider request.
+
+Remaining gates: mounted-browser keyboard/focus behavior and VoiceOver status
+announcements, actual Next action transport under network loss and authentication
+changes, credentialed account/linkage handling and fresh-target staging acceptance
+remain **UNRUN/blocked**. Automated local results do not close these gates. No
+R17 setup, credential work, provider operation, deployment, production action or
+Git push was performed.
+
+Next product-facing task: give repeated device-revocation buttons distinct,
+device-specific accessible names so keyboard/screen-reader users can identify
+the target before entering the existing confirmation flow.

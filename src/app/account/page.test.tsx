@@ -160,6 +160,31 @@ describe("account session boundary", () => {
     expect(account).not.toContain("customer-id");
   });
 
+  it.each(["licensingUnavailable", "authenticationUnavailable"])("wires an initial %s to the existing retry read control", async error => {
+    const fetchMock = mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 503, body: { error } },
+    );
+    const account = await renderAccount();
+    expect(account).toContain(">Try again</button>");
+    expect(account).not.toContain("No active products");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    for (const [url, options] of fetchMock.mock.calls) {
+      expect(["/v1/customer/session", "/v1/customer/licenses"]).toContain(url.pathname);
+      expect(options.method).toBeUndefined();
+    }
+  });
+
+  it.each(["accountUnlinked", "accountDisabled", "emailNotVerified"])("keeps initial %s outside the recoverable load path", async error => {
+    mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 403, body: { error } },
+    );
+    const account = await renderAccount();
+    expect(account).not.toContain("Try again</button>");
+    expect(account).not.toContain("Your products");
+  });
+
   it("uses the existing WorkOS server-side sign-out operation", async () => {
     mocks.signOut.mockResolvedValue(undefined);
 

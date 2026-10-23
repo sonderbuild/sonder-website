@@ -1,24 +1,48 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { refreshActivationStatus } from "./actions";
 
 import type { CustomerLicensingProduct, CustomerLicensingError } from "@/lib/customer-licensing";
 
-export function ActivationManagement({ products }: { products: CustomerLicensingProduct[] }) {
+type ReadScope = { sourceProducts: CustomerLicensingProduct[]; sourceError?: CustomerLicensingError };
+
+export function ActivationManagement({ products, initialError }: { products: CustomerLicensingProduct[]; initialError?: CustomerLicensingError }) {
   const router = useRouter();
   const [revoking, setRevoking] = useState<string>();
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [needsRefresh, setNeedsRefresh] = useState(false);
-  const [refreshing, startRefresh] = useTransition();
-  const [refreshed, setRefreshed] = useState<{ sourceProducts: CustomerLicensingProduct[]; result: Awaited<ReturnType<typeof refreshActivationStatus>> }>();
-  const refreshInFlight = useRef(false);
-  const readResult = refreshed?.sourceProducts === products ? refreshed.result : undefined;
-  const visibleProducts = readResult?.kind === "error" ? [] : readResult?.kind === "ready" ? readResult.products : products;
+  const [, startRefresh] = useTransition();
+  const [refreshed, setRefreshed] = useState<{ scope: ReadScope; result?: Awaited<ReturnType<typeof refreshActivationStatus>> }>();
+  const [readFeedbackActive, setReadFeedbackActive] = useState(true);
+  const refreshInFlight = useRef<ReadScope | null>(null);
+  const feedback = useRef<HTMLParagraphElement>(null);
+  const currentRead = refreshed?.scope.sourceProducts === products && refreshed.scope.sourceError === initialError;
+  const readResult = currentRead ? refreshed.result : undefined;
+  const refreshing = currentRead && refreshed.result === undefined;
+  const currentError = readResult?.kind === "error" ? readResult.error : readResult?.kind === "ready" ? undefined : initialError;
+  const canRetry = initialError !== undefined && (currentError === "licensingUnavailable" || currentError === "authenticationUnavailable");
+  const visibleProducts = currentError ? [] : readResult?.kind === "ready" ? readResult.products : products;
   const activeProducts = visibleProducts.filter((product) => product.entitlement.status === "active" && product.license);
+  const displayError = refreshing ? undefined : currentError
+    ? !readResult && currentError === "licensingUnavailable"
+      ? "We could not load your activation details right now. Please try again shortly."
+      : refreshErrorMessage(currentError)
+    : error;
+  const displayNotice = refreshing ? "Refreshing activation status…" : currentError ? undefined
+    : readFeedbackActive && readResult?.kind === "ready"
+      ? needsRefresh
+        ? "Activation status refreshed. The list below shows your current account state; it does not confirm the outcome of the earlier request."
+        : "Activation details loaded."
+      : notice;
+
+  useEffect(() => () => { refreshInFlight.current = null; }, [products, initialError]);
+  useEffect(() => {
+    if (readFeedbackActive && !refreshing && readResult) feedback.current?.focus({ preventScroll: true });
+  }, [readFeedbackActive, refreshing, readResult]);
 
   async function revoke(activationId: string, label: string) {
     if (refreshInFlight.current) return;
@@ -26,6 +50,7 @@ export function ActivationManagement({ products }: { products: CustomerLicensing
     setError(undefined);
     setNotice(undefined);
     setNeedsRefresh(false);
+    setReadFeedbackActive(false);
     setRevoking(activationId);
     let requested = false;
     let confirmed = false;
@@ -62,31 +87,27 @@ export function ActivationManagement({ products }: { products: CustomerLicensing
 
   function refreshStatus() {
     if (refreshInFlight.current || revoking) return;
-    refreshInFlight.current = true;
+    const scope = { sourceProducts: products, sourceError: initialError };
+    refreshInFlight.current = scope;
+    setRefreshed({ scope });
+    setReadFeedbackActive(true);
     setError(undefined);
-    setNotice("Refreshing activation status…");
+    setNotice(undefined);
     startRefresh(async () => {
       try {
         const result = await refreshActivationStatus();
-        setRefreshed({ sourceProducts: products, result });
-        if (result.kind === "ready") {
-          setNotice("Activation status refreshed. The list below shows your current account state; it does not confirm the outcome of the earlier request.");
-        } else {
-          setNotice(undefined);
-          setError(refreshErrorMessage(result.error));
-        }
+        if (refreshInFlight.current !== scope) return;
+        setRefreshed({ scope, result });
       } catch {
-        // A lost read response provides no new account or activation evidence.
-        setRefreshed({ sourceProducts: products, result: { kind: "error", error: "licensingUnavailable" } });
-        setNotice(undefined);
-        setError("We could not refresh activation status. Please try again.");
+        if (refreshInFlight.current !== scope) return;
+        setRefreshed({ scope, result: { kind: "error", error: "licensingUnavailable" } });
       } finally {
-        refreshInFlight.current = false;
+        if (refreshInFlight.current === scope) refreshInFlight.current = null;
       }
     });
   }
 
-  return <div className="mt-5 space-y-10">{notice && <p className="type-body text-base leading-7" role="status">{notice}</p>}{error && <p className="type-body text-base leading-7" role="alert">{error}</p>}{needsRefresh && <div><button className="link" type="button" onClick={refreshStatus} disabled={refreshing || !!revoking} aria-busy={refreshing}>Refresh activation status</button>{readResult?.kind === "error" && readResult.error === "unauthenticated" && <p className="type-body mt-3"><a className="link" href="/login">Sign in again</a></p>}</div>}{readResult?.kind !== "error" && activeProducts.length === 0 && <p className="type-body mt-5 text-base leading-7">No active products with activation slots are connected to this account.</p>}{!refreshing && activeProducts.map((product, index) => {
+  return <div className="mt-5 space-y-10">{displayNotice && <p className="type-body text-base leading-7" role="status" tabIndex={-1} ref={feedback}>{displayNotice}</p>}{displayError && <p className="type-body text-base leading-7" role="alert" tabIndex={-1} ref={feedback}>{displayError}</p>}{(needsRefresh || canRetry) && <div><button className="link" type="button" onClick={refreshStatus} disabled={refreshing || !!revoking} aria-busy={refreshing}>{needsRefresh ? "Refresh activation status" : "Try again"}</button></div>}{currentError === "unauthenticated" && <p className="type-body mt-3"><a className="link" href="/login">Sign in again</a></p>}{!refreshing && !currentError && activeProducts.length === 0 && <p className="type-body mt-5 text-base leading-7">No active products with activation slots are connected to this account.</p>}{!refreshing && activeProducts.map((product, index) => {
     const license = product.license!;
     const remaining = license.remainingActivationSlots;
     return <section key={`${product.productId}-${index}`} aria-labelledby={`activations-${product.productId}-${index}`}><h3 id={`activations-${product.productId}-${index}`} className="type-body text-lg">{product.name}</h3><p className="type-body mt-2 text-base">Activations</p><p className="type-body mt-1 text-base">{license.activeActivationCount} of {license.activationLimit} used</p><p className="type-body mt-1 text-base">{remaining} {remaining === 1 ? "slot" : "slots"} available</p>{license.status !== "active" && <p className="type-body mt-1 text-sm">Activation unavailable</p>}{license.activations.length > 0 ? <ul className="mt-5 divide-y divide-black/10">{license.activations.map((activation) => <li className="flex flex-wrap items-center justify-between gap-4 py-4" key={activation.activationId}><div><p className="type-body text-base">{activation.deviceLabel ?? "Unnamed device"}</p><p className="type-body mt-1 text-sm">Activated {formatDate(activation.activatedAt)}{activation.lastSeenAt ? ` · Last seen ${formatDate(activation.lastSeenAt)}` : ""}</p></div><button className="link" disabled={refreshing || revoking === activation.activationId} onClick={() => revoke(activation.activationId, activation.deviceLabel ?? "this device")} type="button">{revoking === activation.activationId ? "Revoking…" : "Revoke"}</button></li>)}</ul> : <p className="type-body mt-5 text-base leading-7">No devices are using activation slots.</p>}</section>;

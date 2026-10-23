@@ -3,7 +3,7 @@ import { withAuth } from "@workos-inc/authkit-nextjs";
 import { redirect } from "next/navigation";
 
 import { Container } from "@/components/ui/container";
-import { customerLicensing, type CustomerLicensingProduct } from "@/lib/customer-licensing";
+import { customerLicensing, type CustomerLicensingProduct, type CustomerLicensingError } from "@/lib/customer-licensing";
 
 import { signOutAction } from "./actions";
 import { ActivationManagement } from "./activation-management";
@@ -44,8 +44,8 @@ export default async function AccountPage() {
 
 type CustomerSession = { kind: "linked" | "unlinked" | "disabled" | "verificationRequired" | "unauthenticated" | "unavailable" };
 
-function ProductsSection({ licensing }: { licensing: { kind: "ready"; products: CustomerLicensingProduct[] } | { kind: "error"; error: string } | null }) {
-  return <section aria-labelledby="products-heading" className="mt-14 border-t border-black/10 pt-8"><p className="eyebrow">Your products</p><h2 id="products-heading" className="sr-only">Your products</h2>{licensing?.kind === "ready" ? <ActivationManagement products={licensing.products} /> : <p className="type-body mt-5 text-base leading-7">We could not load your activation details right now. Please try again shortly.</p>}</section>;
+function ProductsSection({ licensing }: { licensing: { kind: "ready"; products: CustomerLicensingProduct[] } | { kind: "error"; error: CustomerLicensingError } | null }) {
+  return <section aria-labelledby="products-heading" className="mt-14 border-t border-black/10 pt-8"><p className="eyebrow">Your products</p><h2 id="products-heading" className="sr-only">Your products</h2>{licensing?.kind === "ready" ? <ActivationManagement products={licensing.products} /> : <ActivationManagement products={[]} initialError={licensing?.kind === "error" ? licensing.error : "licensingUnavailable"} />}</section>;
 }
 
 async function customerSession(accessToken: string): Promise<CustomerSession> {

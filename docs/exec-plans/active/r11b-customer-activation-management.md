@@ -143,6 +143,69 @@ No API mutation, database/provider request, credential work, infrastructure,
 deployment, production operation or push. Historical R11B staging evidence and
 fresh-target blockers retain their original scope.
 
-Next product-facing task: add an explicit account refresh action for uncertain
+Selected follow-up at that checkpoint (completed locally below): add an explicit account refresh action for uncertain
 revocation outcomes, using the existing server read path without automatically
 retrying the mutation or guessing activation/capacity state.
+
+
+## Local uncertain-revocation recovery action — 2026-10-23
+
+**IMPLEMENTED / LOCALLY VERIFIED; browser/staging acceptance UNRUN.** Baseline
+`446c8b0`. The existing shared licensing read/revoke contracts and current API
+routes agree: reads independently authenticate/resolve the customer and return
+current state, while revocation remains a separate mutation. No mismatch, shared
+contract/version change, provider operation or new custom API route.
+
+`Refresh activation status` is offered after an uncertain revoke response. It
+invokes the existing account Server Action module, rechecks the WorkOS website
+session on each call and reuses the account page's `customerLicensing` consumer
+with its authenticated, no-store `GET /v1/customer/licenses`. The action has no
+identity/activation parameters and returns only the established validated
+projection or typed error. Next's native action transport POSTs to the existing
+`/account` page; that transport performs only the backend GET, never revocation.
+The mutation relay, API, secrets and parsing rules are unchanged.
+
+A React transition announces loading, a native keyboard button exposes busy and
+disabled state, and an immediate ref guard prevents duplicate dispatch before
+render. The action never calls the revoke handler/CSRF path. Successful reads
+replace the list/capacity with actual returned data; absent activations or an
+empty result do not prove the previous request succeeded. A recovery snapshot
+cannot overwrite newer server props, including when its response arrives late.
+Known revoke success and definite rejection retain their separate feedback and
+do not become uncertain read outcomes.
+
+Unauthenticated, unlinked, disabled, unverified-email, authentication-unavailable
+and licensing-unavailable results retain distinct typed meaning/presentation.
+Old activation data is hidden after failure; an expired session offers a sign-in
+link, and read failures remain explicitly retryable without resubmitting a
+mutation. The account introduction now says `Manage the activations connected
+to your account.` so a later linkage denial cannot leave a contradictory static
+claim that the customer is connected. No activation or entitlement is inferred
+or changed locally.
+
+Validation:
+
+- Focused registered Vitest command: activation-management, actions, account page
+  and customer-licensing suites — **124 PASS / 4 files**.
+- `pnpm test` — **176 PASS / 13 files**; `pnpm lint` — **PASS**.
+- Registered `pnpm build` attempted with CMS/API disabled: Turbopack again stopped
+  at the existing internal worker-port EPERM restriction. The documented command
+  `NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID='' SANITY_DATASET='' SONDER_API_ORIGIN='' pnpm build --webpack`
+  — **PASS**, including TypeScript, action/client production wiring and page
+  generation. No bundler configuration or environment file change.
+- `git diff --check` and final scoped self-review — **PASS**. Tests exercise the
+  real server action with mocked website authentication/fetch and the real
+  consumer parser; component tests use the existing Node hook/router harness.
+  Repeated refreshes use only GET, no revoke repeat; tests cover lost responses,
+  pending/repeated clicks, error distinctions, empty/unchanged/changed lists and
+  newer/late server data. No real API/database/provider request was executed.
+
+Remaining gates: mounted-browser keyboard/focus retention and screen-reader
+announcements, actual Next transition/action transport under network loss,
+credentialed session-expiry/linkage handling, and fresh-target staging acceptance
+remain UNRUN/blocked under the existing roadmap. Node/render/build results do not
+close them. No credentials, infrastructure, deployment, production action or push.
+
+Next product task: make an initial activation-list loading failure explicitly
+retryable using this existing read action; keep its error and auth states distinct
+without adding endpoints or automatically repeating mutations.

@@ -56,7 +56,7 @@ describe("account session boundary", () => {
     );
 
     const account = await renderAccount();
-    expect(account).toContain("Your customer account is connected.");
+    expect(account).toContain("Manage the activations connected to your account.");
     expect(account).toContain("Your products");
     expect(account).toContain("Monitor");
     expect(account).toContain("Activations");

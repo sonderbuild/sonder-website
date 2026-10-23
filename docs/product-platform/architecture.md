@@ -100,6 +100,16 @@ passing data into account/client state. Error codes require their documented
 HTTP status and endpoint. Unknown extension data never becomes account identity,
 capacity policy, authorization input or a provider dependency.
 
+After an uncertain revoke outcome, the client offers an explicit status refresh.
+The existing account Server Action module rechecks `withAuth()` and calls the same
+no-store `customerLicensing` reader. Next dispatches this read through the existing
+`/account` page; no custom API route is added. The only backend call is the
+established licensing GET. Results retain the validated known-field projection
+and typed error semantics. Failed reads hide old activation data; successful reads
+replace it without inferring the earlier mutation outcome. Newer server-rendered
+account props supersede recovery snapshots. No token or caller-selected customer
+identity crosses into browser state.
+
 ## R3 Lemon ingestion boundary
 
 `POST /webhooks/lemonsqueezy` is a Worker-only endpoint. It reads the raw body

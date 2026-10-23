@@ -30,7 +30,7 @@ export default async function AccountPage() {
   }
 
   const message = accountState.kind === "linked"
-    ? "Your customer account is connected."
+    ? "Manage the activations connected to your account."
     : accountState.kind === "unlinked"
       ? "You’re signed in, but no sonder customer account is connected to this identity."
       : accountState.kind === "disabled"

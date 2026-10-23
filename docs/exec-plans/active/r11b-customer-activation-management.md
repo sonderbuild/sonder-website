@@ -261,6 +261,55 @@ remain **UNRUN/blocked**. Automated local results do not close these gates. No
 R17 setup, credential work, provider operation, deployment, production action or
 Git push was performed.
 
-Next product-facing task: give repeated device-revocation buttons distinct,
+Selected follow-up at that checkpoint (completed locally below): give repeated device-revocation buttons distinct,
 device-specific accessible names so keyboard/screen-reader users can identify
 the target before entering the existing confirmation flow.
+
+
+## Device-specific revoke accessible names — 2026-10-23
+
+**IMPLEMENTED / LOCALLY VERIFIED; browser/staging acceptance UNRUN.** Account
+baseline `adaaa29`; implemented on its descendant `17b0730`, which contains the
+separately completed catalog change. This slice changes only activation-list
+presentation, focused tests and this existing evidence record.
+
+Each revoke button has an explicit accessible name, for example `Revoke
+activation for MacBook Pro`, built from the validated device-label projection.
+Whitespace is trimmed for presentation. Missing, empty or whitespace-only names
+use `Unnamed device (activation N)`; duplicate labels (compared without case)
+receive `(activation N)` across the displayed product lists. The same qualifier
+is visible in the device row. N is the current list position, never an internal
+identifier or persistent device identity, and is recomputed from each current
+server-returned list. Shared authority still treats labels as mutable
+presentation metadata, never authorization input. No contract mismatch/change.
+
+Visible button text remains `Revoke` with the existing `Revoking…` pending text.
+The target-specific accessible name remains available during pending state,
+with explicit `aria-busy` and the existing native disabled behavior. Confirmation
+copy/label inputs, mutation addressing, read refresh, error states and authority
+checks are unchanged. No endpoint, provider dependency or new state abstraction.
+
+Validation:
+
+- `pnpm test src/app/account/activation-management.test.tsx` — **46 PASS**.
+  New coverage asserts explicit accessible names and visible labels for named,
+  null/empty/whitespace and duplicate-label devices (including across products),
+  list replacement/removal, no exposed internal IDs and unchanged unnamed-device
+  confirmation/cancellation. Existing pending-state regression also asserts the
+  device-specific name and busy state while disabled.
+- Registered `pnpm test` — **214 PASS / 14 files**; `pnpm lint` — **PASS**.
+- Supported production build
+  `NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID='' SANITY_DATASET='' SONDER_API_ORIGIN='' pnpm build --webpack`
+  — **PASS**, including TypeScript and 13/13 generation entries. The first build
+  caught a test-only product outside the typed catalog; it was corrected to Frame
+  before the final passing full suite, lint and build. Default Turbopack remains
+  outside this evidence, per the previously recorded worker-port restriction.
+- `git diff --check` and scoped self-review — **PASS**. Tests use the existing
+  Node/render interaction harness; explicit aria-label assertions do not prove
+  browser accessibility-tree or screen-reader output.
+
+Remaining gates: mounted-browser keyboard/focus behavior, accessible-name and
+busy-state announcements with VoiceOver, dynamic server-list updates in the
+actual Next runtime, and credentialed/fresh-target staging acceptance remain
+**UNRUN/blocked** under the existing gates. No staging status was promoted. No
+API request, provider operation, credentials, D1 work, deployment or Git push.

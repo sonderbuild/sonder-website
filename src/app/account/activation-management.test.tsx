@@ -90,6 +90,7 @@ describe("account activation revoke presentation", () => {
     const request = click();
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(markup()).toContain("Revoking…"); expect(findButton(render())?.props.disabled).toBe(true);
+    expect(markup()).toContain('aria-label="Revoke activation for Studio Mac" aria-busy="true"');
     expect(markup()).toContain("1 of 3 used"); expect(markup()).not.toContain("Activation revoked.");
     expect(hooks.refresh).not.toHaveBeenCalled();
     complete(Response.json({ revoked: true })); await request;
@@ -353,4 +354,65 @@ describe("initial activation-list retry", () => {
     expect(markup(emptyProducts, "authenticationUnavailable")).toContain("1 of 3 used");
   });
 
+});
+
+
+describe("device-specific revoke accessible names", () => {
+  function names(input = products) {
+    // These buttons use explicit aria-label, which supplies their accessible name.
+    return [...markup(input).matchAll(/aria-label="([^"]+)"/g)].map(match => match[1]);
+  }
+  function devices(labels: Array<string | null>) {
+    const input = structuredClone(products);
+    input[0].license!.activations = labels.map((deviceLabel, index) => ({ ...products[0].license!.activations[0], activationId: `private-id-${index}`, deviceLabel }));
+    return input;
+  }
+
+  it("names a button from its visible device label while keeping visible Revoke text", () => {
+    const input = devices(["MacBook Pro"]);
+    expect(names(input)).toEqual(["Revoke activation for MacBook Pro"]);
+    expect(markup(input)).toContain('>MacBook Pro</p>');
+    expect(findButton(render(input), "Revoke")).toBeDefined();
+    expect(markup(input)).toContain('aria-busy="false"');
+    expect(markup(input)).not.toContain("private-id");
+  });
+
+  it("uses visible list positions for null, empty and whitespace-only labels", () => {
+    const input = devices([null, "", "   "]);
+    expect(names(input)).toEqual([1, 2, 3].map(position => `Revoke activation for Unnamed device (activation ${position})`));
+    expect(markup(input)).toContain('>Unnamed device (activation 2)</p>');
+    expect(markup(input)).not.toContain("private-id");
+  });
+
+  it("distinguishes duplicate labels across products without exposing internal identifiers", () => {
+    const input = devices(["Studio Mac", "Studio Mac"]);
+    const other = structuredClone(input[0]); other.productId = "frame"; other.name = "Frame";
+    other.license!.activations = [{ ...other.license!.activations[0], activationId: "another-private-id", deviceLabel: " studio mac " }];
+    input.push(other);
+    expect(names(input)).toEqual([
+      "Revoke activation for Studio Mac (activation 1)",
+      "Revoke activation for Studio Mac (activation 2)",
+      "Revoke activation for studio mac (activation 3)",
+    ]);
+    expect(markup(input)).toContain('>Studio Mac (activation 2)</p>');
+    expect(markup(input)).not.toContain("private-id");
+  });
+
+  it("recomputes labels after server list changes without retaining removed targets", () => {
+    const initial = devices(["Studio Mac", "Studio Mac"]);
+    expect(names(initial)).toHaveLength(2);
+    const updated = devices(["Travel Mac"]);
+    expect(names(updated)).toEqual(["Revoke activation for Travel Mac"]);
+    expect(markup(updated)).not.toContain("Studio Mac");
+    const empty = devices([]);
+    expect(names(empty)).toEqual([]);
+  });
+
+  it("preserves the existing unnamed-device confirmation and cancellation behavior", async () => {
+    const input = devices([null]);
+    const fetchMock = vi.fn(); vi.stubGlobal("fetch", fetchMock); confirm.mockReturnValue(false);
+    await findButton(render(input), "Revoke")!.props.onClick();
+    expect(confirm).toHaveBeenCalledWith(confirmation.replace("Studio Mac", "this device"));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

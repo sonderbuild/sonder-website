@@ -162,6 +162,12 @@ restored. Repeat and cross-customer paths are deterministic API evidence because
 the staging browser session has one linked QA identity; no second identity was
 fabricated. Production is untouched.
 
+**2026-10-23 local compatibility repair verified:** licensing read/revoke consumers
+now ignore additive v1 keys, project only validated known fields and preserve
+status-specific errors. The [existing R11B evidence](../exec-plans/active/r11b-customer-activation-management.md#local-v1-response-compatibility--2026-10-23)
+records135 passing tests and the build limitation/fallback. This repair adds no
+staging acceptance; the fresh-target handoff below remains blocked.
+
 ## Internal Admin and fresh-target handoff
 
 sonder Admin is implemented in the separate `sonder-admin` repository, with

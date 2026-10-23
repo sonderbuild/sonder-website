@@ -69,6 +69,38 @@ describe("account session boundary", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("renders only known licensing fields from an additive response", async () => {
+    mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: 200, body: { customerId: "untrusted-customer", products: [{
+        productId: "monitor", name: "Monitor", providerId: "untrusted-provider",
+        entitlement: { status: "active", authorization: "untrusted-grant" },
+        license: { status: "active", activationLimit: 3, activeActivationCount: 1, remainingActivationSlots: 2, credential: "untrusted-credential",
+          activations: [{ activationId: "activation-id", deviceLabel: "Studio Mac", activatedAt: "2026-09-11 10:00:00", lastSeenAt: null, status: "active", deviceFingerprint: "untrusted-fingerprint" }],
+        },
+      }] } },
+    );
+    const account = await renderAccount();
+    expect(account).toContain("1 of 3 used");
+    expect(account).toContain("Studio Mac");
+    expect(account).not.toContain("untrusted-");
+  });
+
+  it.each([
+    [403, "accountUnlinked", "no sonder customer account is connected"],
+    [403, "accountDisabled", "customer account is currently unavailable"],
+    [403, "emailNotVerified", "verified email is required"],
+  ])("preserves account state for additive licensing HTTP %s / %s", async (status, error, message) => {
+    mockAuthenticatedAccount(
+      { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },
+      { status: Number(status), body: { error, products: [], customerId: "untrusted-customer" } },
+    );
+    const account = await renderAccount();
+    expect(account).toContain(message);
+    expect(account).not.toContain("untrusted-customer");
+    expect(account).not.toContain("Your products");
+  });
+
   it("renders the canonical Cue licensing projection", async () => {
     mockAuthenticatedAccount(
       { status: 200, body: { identityId: "identity-id", customerId: "customer-id" } },

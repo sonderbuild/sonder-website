@@ -94,6 +94,12 @@ The Worker owns ownership checks, D1 state, one material audit event, capacity
 release, and refresh rejection. Future recent-auth policy may return
 `stepUpRequired` without changing the relay path.
 
+The licensing response consumer accepts shared v1 additive keys, validates known
+fields and lifecycle values, then constructs a known-field-only projection before
+passing data into account/client state. Error codes require their documented
+HTTP status and endpoint. Unknown extension data never becomes account identity,
+capacity policy, authorization input or a provider dependency.
+
 ## R3 Lemon ingestion boundary
 
 `POST /webhooks/lemonsqueezy` is a Worker-only endpoint. It reads the raw body

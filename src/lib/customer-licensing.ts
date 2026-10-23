@@ -31,8 +31,8 @@ export async function customerLicensing(accessToken: string): Promise<{ kind: "r
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     const body: unknown = await response.json().catch(() => null);
-    if (response.status === 200 && isCustomerLicensing(body)) return { kind: "ready", products: body.products };
-    return { kind: "error", error: knownError(body) ?? "licensingUnavailable" };
+    if (response.status === 200 && isCustomerLicensing(body)) return { kind: "ready", products: body.products.map(knownProductFields) };
+    return { kind: "error", error: knownError(body, response.status, false) ?? "licensingUnavailable" };
   } catch {
     return { kind: "error", error: "licensingUnavailable" };
   }
@@ -50,7 +50,7 @@ export async function revokeCustomerActivation(accessToken: string, activationId
     });
     const body: unknown = await response.json().catch(() => null);
     if (response.status === 200 && isRevoked(body)) return { kind: "revoked" };
-    return { kind: "error", error: knownError(body) ?? "licensingUnavailable" };
+    return { kind: "error", error: knownError(body, response.status, true) ?? "licensingUnavailable" };
   } catch {
     return { kind: "error", error: "licensingUnavailable" };
   }
@@ -61,30 +61,29 @@ export function isOpaqueActivationId(value: string): boolean {
 }
 
 function isCustomerLicensing(value: unknown): value is { products: CustomerLicensingProduct[] } {
-  if (typeof value !== "object" || value === null || Object.keys(value).length !== 1) return false;
+  if (!isRecord(value)) return false;
   const products = (value as Record<string, unknown>).products;
   return Array.isArray(products) && products.every(isProduct);
 }
 
 function isProduct(value: unknown): value is CustomerLicensingProduct {
-  if (typeof value !== "object" || value === null) return false;
+  if (!isRecord(value)) return false;
   const product = value as Record<string, unknown>;
   if (!isCanonicalProduct(product) || !isEntitlement(product.entitlement)) return false;
   return product.license === undefined || isLicense(product.license);
 }
 
 function isCanonicalProduct(product: Record<string, unknown>): boolean {
-  return Object.keys(product).every((key) => ["productId", "name", "entitlement", "license"].includes(key))
-    && (product.productId === "monitor" && product.name === "Monitor" || product.productId === "frame" && product.name === "Frame" || product.productId === "crate" && product.name === "Crate" || product.productId === "cue" && product.name === "Cue");
+  return (product.productId === "monitor" && product.name === "Monitor" || product.productId === "frame" && product.name === "Frame" || product.productId === "crate" && product.name === "Crate" || product.productId === "cue" && product.name === "Cue");
 }
 
 function isEntitlement(value: unknown): boolean {
-  return typeof value === "object" && value !== null && Object.keys(value).length === 1
+  return isRecord(value)
     && ["active", "grace", "suspended", "revoked"].includes((value as Record<string, unknown>).status as string);
 }
 
 function isLicense(value: unknown): boolean {
-  if (typeof value !== "object" || value === null || Object.keys(value).length !== 5) return false;
+  if (!isRecord(value)) return false;
   const license = value as Record<string, unknown>;
   return ["active", "expired", "refunded", "disabled", "unknown"].includes(license.status as string)
     && isNonNegativeInteger(license.activationLimit)
@@ -94,7 +93,7 @@ function isLicense(value: unknown): boolean {
 }
 
 function isActivation(value: unknown): boolean {
-  if (typeof value !== "object" || value === null || Object.keys(value).length !== 5) return false;
+  if (!isRecord(value)) return false;
   const activation = value as Record<string, unknown>;
   return typeof activation.activationId === "string" && isOpaqueActivationId(activation.activationId)
     && (typeof activation.deviceLabel === "string" || activation.deviceLabel === null)
@@ -108,13 +107,44 @@ function isNonNegativeInteger(value: unknown): value is number {
 }
 
 function isRevoked(value: unknown): boolean {
-  return typeof value === "object" && value !== null && Object.keys(value).length === 1 && (value as Record<string, unknown>).revoked === true;
+  return isRecord(value) && (value as Record<string, unknown>).revoked === true;
 }
 
-function knownError(value: unknown): CustomerLicensingError | undefined {
-  if (typeof value !== "object" || value === null || Object.keys(value).length !== 1) return undefined;
-  const error = (value as Record<string, unknown>).error;
-  return typeof error === "string" && ["unauthenticated", "accountUnlinked", "accountDisabled", "emailNotVerified", "authenticationUnavailable", "licensingUnavailable", "activationUnavailable", "stepUpRequired"].includes(error)
-    ? error as CustomerLicensingError
-    : undefined;
+// Shared v1 permits additive keys. Project only known validated data into account
+// state, including every nested object passed to the client activation component.
+function knownProductFields(product: CustomerLicensingProduct): CustomerLicensingProduct {
+  const license = product.license;
+  return {
+    productId: product.productId,
+    name: product.name,
+    entitlement: { status: product.entitlement.status },
+    ...(license ? { license: {
+      status: license.status,
+      activationLimit: license.activationLimit,
+      activeActivationCount: license.activeActivationCount,
+      remainingActivationSlots: license.remainingActivationSlots,
+      activations: license.activations.map((activation) => ({
+        activationId: activation.activationId,
+        deviceLabel: activation.deviceLabel,
+        activatedAt: activation.activatedAt,
+        lastSeenAt: activation.lastSeenAt,
+        status: activation.status,
+      })),
+    } } : {}),
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function knownError(value: unknown, status: number, revocation: boolean): CustomerLicensingError | undefined {
+  if (!isRecord(value)) return undefined;
+  const error = value.error;
+  if (status === 401 && error === "unauthenticated") return error;
+  if (status === 403 && (error === "accountUnlinked" || error === "accountDisabled" || error === "emailNotVerified")) return error;
+  if (status === 503 && (error === "authenticationUnavailable" || error === "licensingUnavailable")) return error;
+  if (revocation && status === 403 && error === "stepUpRequired") return error;
+  if (revocation && status === 404 && error === "activationUnavailable") return error;
+  return undefined;
 }

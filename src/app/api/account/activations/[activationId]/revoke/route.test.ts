@@ -20,7 +20,7 @@ describe("activation revoke relay", () => {
   it("forwards only an opaque activation ID and server-side WorkOS token", async () => {
     vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
     mocks.withAuth.mockResolvedValue({ user: { id: "workos-user" }, accessToken: "server-only-token" });
-    const fetchMock = vi.fn().mockResolvedValue(Response.json({ revoked: true }));
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ revoked: true, customerId: "untrusted-customer", authorization: "untrusted-grant" }));
     vi.stubGlobal("fetch", fetchMock);
 
     const response = await POST(authorizedRequest(), params());
@@ -28,6 +28,15 @@ describe("activation revoke relay", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ revoked: true });
     expect(fetchMock).toHaveBeenCalledWith(new URL(`/v1/customer/activations/${activationId}/revoke`, "https://api.test"), expect.objectContaining({ headers: { Authorization: "Bearer server-only-token" }, method: "POST" }));
+  });
+
+  it("does not turn a mismatched producer error into an account authorization state", async () => {
+    vi.stubEnv("SONDER_API_ORIGIN", "https://api.test");
+    mocks.withAuth.mockResolvedValue({ user: { id: "workos-user" }, accessToken: "server-only-token" });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ error: "unauthenticated", detail: "untrusted" }, { status: 500 })));
+    const response = await POST(authorizedRequest(), params());
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ error: "licensingUnavailable" });
   });
 
   it("fails closed for an unavailable cross-customer or unknown activation", async () => {

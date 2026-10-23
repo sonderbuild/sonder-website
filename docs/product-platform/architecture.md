@@ -1,5 +1,11 @@
 # Product platform architecture
 
+> Current scope: website catalog and CMS publishing are described in
+> [Product publishing](product-publishing.md). The early platform diagram below
+> contains historical/future seams (Resend, GitHub routing, native updates), not
+> evidence of active integrations. Current API source, system contracts and owner
+> roadmaps determine runtime support and fresh-target acceptance.
+
 ## Goal
 
 Provide a small shared foundation for Monitor, Frame, Crate, Cue, and future

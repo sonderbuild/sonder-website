@@ -1,6 +1,6 @@
 import { defineField, defineType } from "sanity";
 
-const productIds = ["monitor", "frame", "crate", "cue"];
+import { canonicalProductIds } from "../../src/data/product-identities";
 
 const requiredText = (title: string, max: number) => defineField({
   name: title.toLowerCase(),
@@ -18,7 +18,7 @@ export const productMarketing = defineType({
       name: "productId",
       title: "Canonical product",
       type: "string",
-      options: { list: productIds.map((value) => ({ title: value[0].toUpperCase() + value.slice(1), value })) },
+      options: { list: canonicalProductIds.map((value) => ({ title: value[0].toUpperCase() + value.slice(1), value })) },
       validation: (rule) => rule.required(),
     }),
     requiredText("Title", 80),

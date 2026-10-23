@@ -1,3 +1,5 @@
+import type { CanonicalProductId } from "./product-identities";
+
 export type ProductMedia = {
   kind: "image" | "video" | "gif" | "demo";
   label: string;
@@ -13,7 +15,9 @@ export type ProductSection =
   | { type: "feature-highlight"; eyebrow?: string; title: string; description: string };
 
 export type Product = {
-  slug: "monitor" | "frame" | "crate";
+  id: CanonicalProductId;
+  slug: string;
+  marketingSource: "source" | "sanity";
   name: string;
   tagline: string;
   description: string;
@@ -25,7 +29,7 @@ export type Product = {
 
 export const products: Product[] = [
   {
-    slug: "monitor", name: "Monitor", tagline: "Understand your Mac.", description: "A quiet system monitoring and insights app designed to reveal what is happening beneath your workflow.", status: "In development", platform: "macOS", category: "macOS App",
+    id: "monitor", slug: "monitor", marketingSource: "sanity", name: "Monitor", tagline: "Understand your Mac.", description: "A quiet system monitoring and insights app designed to reveal what is happening beneath your workflow.", status: "In development", platform: "macOS", category: "macOS App",
     sections: [
       {
         type: "statement",
@@ -74,7 +78,7 @@ export const products: Product[] = [
     ],
   },
   {
-    slug: "frame", name: "Frame", tagline: "Make room for the document.", description: "A focused workspace for moving through documents with greater clarity.", status: "In development", platform: "macOS", category: "macOS App",
+    id: "frame", slug: "frame", marketingSource: "source", name: "Frame", tagline: "Make room for the document.", description: "A focused workspace for moving through documents with greater clarity.", status: "In development", platform: "macOS", category: "macOS App",
     sections: [
       {
         type: "statement",
@@ -117,7 +121,7 @@ export const products: Product[] = [
     ],
   },
   {
-    slug: "crate", name: "Crate", tagline: "Know the music you keep.", description: "Metadata intelligence for a more useful, more personal music library.", status: "In development", platform: "macOS", category: "macOS App",
+    id: "crate", slug: "crate", marketingSource: "source", name: "Crate", tagline: "Know the music you keep.", description: "Metadata intelligence for a more useful, more personal music library.", status: "In development", platform: "macOS", category: "macOS App",
     sections: [
       {
         type: "statement",

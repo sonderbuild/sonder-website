@@ -44,3 +44,12 @@ server-only Contributor token would therefore still permit draft writes if
 compromised, even though it is isolated to this endpoint and dataset. Custom
 roles are Enterprise-only. No such token, secret, Draft Mode endpoint, or route
 exists in this phase.
+
+## Catalog ownership
+
+The Studio canonical selector and normalizer share the website projection in
+`src/data/product-identities.ts`; shared authority remains in sonder-system.
+Catalog entries separately declare identity, route slug and editorial source.
+Only Monitor currently opts into published CMS content. See the
+[publishing design](../docs/product-platform/product-publishing.md) before
+adding another product; schema support does not publish a page or grant commerce.

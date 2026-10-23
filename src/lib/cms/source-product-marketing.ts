@@ -4,7 +4,7 @@ import type { ProductMarketingContent, ProductMarketingFeatureSection } from "./
 
 export function sourceProductMarketingContent(product: Product): ProductMarketingContent {
   return {
-    productId: product.slug,
+    productId: product.id,
     title: product.name,
     tagline: product.tagline,
     hero: { description: product.description },

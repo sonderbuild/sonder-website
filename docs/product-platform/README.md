@@ -17,14 +17,17 @@ blocked status; the original design scope below is retained as history.
   password service or expanded account scope follows.
 - Lemon Squeezy is authoritative for commerce. sonder owns entitlement,
   activation, support-case, and audit data.
-- Support mail always becomes a private support case. Only actionable bugs and
-  feature requests become GitHub issues.
+- Current report intake, operational correlation and optional GitHub work after
+  triage follow [system reporting authority](../../../sonder-system/SYSTEM.md).
+  Earlier automatic mail-to-case/issue flows below are historical design; Resend
+  delivery is not an established API integration.
 
 ## Documents
 
 | Document | Purpose |
 | --- | --- |
 | [Inventory](./inventory.md) | What exists today and what this milestone does not change. |
+| [Product publishing](./product-publishing.md) | Catalog/Sanity ownership, gaps and product onboarding. |
 | [Architecture](./architecture.md) | System boundaries, ownership, and responsibilities. |
 | [Environments](./environments.md) | Development, preview, staging, and production boundaries. |
 | [Data model](./data-model.md) | D1 records, constraints, retention, and auditability. |

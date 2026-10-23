@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { getProduct } from "@/data/products";
+import { getProduct, products } from "@/data/products";
 
 import { canonicalProductIds, isCanonicalProductId, normalizeProductMarketingContent } from "./product-marketing";
 import { getProductMarketingContent } from "./product-marketing.server";
@@ -80,7 +80,39 @@ describe("Monitor marketing adapter", () => {
     expect(rendered.sections).toEqual(sourceProduct.sections);
   });
 
-  it("keeps Cue valid for CMS data but outside the public product route type", () => {
+  it("keeps Cue valid for CMS data without a public catalog entry", () => {
     expect(isCanonicalProductId("cue")).toBe(true);
+    expect(getProduct("cue")).toBeUndefined();
+  });
+});
+
+describe("multiple product editorial isolation", () => {
+  it("keeps unique catalog identities and slugs with unchanged source fallback rendering", () => {
+    expect(new Set(products.map(({ id }) => id)).size).toBe(products.length);
+    expect(new Set(products.map(({ slug }) => slug)).size).toBe(products.length);
+    for (const product of products) {
+      expect(isCanonicalProductId(product.id)).toBe(true);
+      expect(productWithMarketingContent(product, sourceProductMarketingContent(product))).toEqual(product);
+    }
+  });
+  it.each(["monitor", "frame", "crate"] as const)("uses %s identity for content and preserves platform facts", async (id) => {
+    const source = getProduct(id)!;
+    const fixture = { ...validDocument, productId: id, title: `Synthetic ${id}`, status: "Available", platform: "fictional", slug: "untrusted", price: 1, downloadUrl: "https://example.invalid/download", entitlement: "untrusted" };
+    const content = await getProductMarketingContent(id, async () => [fixture]);
+    const rendered = productWithMarketingContent(source, content);
+    expect(content.productId).toBe(id);
+    expect(rendered.name).toBe(`Synthetic ${id}`);
+    for (const key of ["id", "slug", "marketingSource", "status", "platform", "category"] as const) expect(rendered[key]).toBe(source[key]);
+    for (const key of ["price", "downloadUrl", "entitlement"]) {
+      expect(content).not.toHaveProperty(key);
+      expect(rendered).not.toHaveProperty(key);
+    }
+    expect(sourceProductMarketingContent({ ...source, slug: "different-route" }).productId).toBe(id);
+  });
+
+  it.each(["frame", "crate"] as const)("uses independent %s source fallback on an outage or another product's content", async (id) => {
+    const fallback = sourceProductMarketingContent(getProduct(id)!);
+    await expect(getProductMarketingContent(id, async () => { throw new Error("offline"); })).resolves.toEqual(fallback);
+    await expect(getProductMarketingContent(id, async () => [validDocument])).resolves.toEqual(fallback);
   });
 });

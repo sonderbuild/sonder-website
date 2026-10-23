@@ -1,6 +1,7 @@
-export const canonicalProductIds = ["monitor", "frame", "crate", "cue"] as const;
+import { canonicalProductIds, type CanonicalProductId } from "@/data/product-identities";
 
-export type CanonicalProductId = (typeof canonicalProductIds)[number];
+export { canonicalProductIds, type CanonicalProductId } from "@/data/product-identities";
+
 export type ProductMarketingFeatureSection =
   | { kind: "statement"; eyebrow?: string; statement: string; description?: string }
   | { kind: "feature"; eyebrow?: string; title: string; description: string };

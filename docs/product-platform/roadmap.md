@@ -187,6 +187,19 @@ separately authorized synthetic staging browser/API evidence. No production roll
 navigation; the [system roadmap](../../../sonder-system/docs/roadmaps/platform-infrastructure-execution.md)
 owns shared sequencing and exact external prerequisites.
 
+## Multi-product publishing preparation — 2026-10-23
+
+**DONE locally; publishing and release remain separately gated.** The catalog now
+separates canonical identity, route slug and explicit source/CMS selection. Studio
+and the normalizer share one website identity projection. Monitor alone remains
+CMS-backed; routes, public names, commerce/account behavior and the seed are
+unchanged. Multi-product fixtures and route/metadata regression coverage pass.
+See the [publishing design](product-publishing.md) for lifecycle, locale, media,
+FAQ, availability and preview gaps, and the
+[completed local plan](../exec-plans/completed/multi-product-catalog-preparation.md)
+for exact test/build/HTTP evidence. No live CMS publication, Mactric migration,
+fresh-environment acceptance or production rollout follows.
+
 ## Production gates
 
 Before a paid product launch, complete every applicable runbook, validate D1

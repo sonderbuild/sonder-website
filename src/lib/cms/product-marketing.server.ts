@@ -1,15 +1,15 @@
 import "server-only";
 
-import { getProduct } from "@/data/products";
+import { products } from "@/data/products";
+import type { CanonicalProductId } from "@/data/product-identities";
 
 import { normalizeProductMarketingContent, type ProductMarketingContent } from "./product-marketing";
 import { fetchPublishedSanityProductMarketing } from "./sanity.server";
 import { sourceProductMarketingContent } from "./source-product-marketing";
 
-export type PublicProductRouteId = "monitor" | "frame" | "crate";
-type ContentLoader = (productId: PublicProductRouteId) => Promise<unknown>;
+type ContentLoader = (productId: CanonicalProductId) => Promise<unknown>;
 
-export async function getProductMarketingContent(productId: PublicProductRouteId, load: ContentLoader = fetchPublishedSanityProductMarketing): Promise<ProductMarketingContent> {
+export async function getProductMarketingContent(productId: CanonicalProductId, load: ContentLoader = fetchPublishedSanityProductMarketing): Promise<ProductMarketingContent> {
   const fallback = sourceFallback(productId);
   try {
     const result = await load(productId);
@@ -21,8 +21,8 @@ export async function getProductMarketingContent(productId: PublicProductRouteId
   }
 }
 
-function sourceFallback(productId: PublicProductRouteId): ProductMarketingContent {
-  const product = getProduct(productId);
+function sourceFallback(productId: CanonicalProductId): ProductMarketingContent {
+  const product = products.find((candidate) => candidate.id === productId);
   if (!product) throw new Error(`Missing source fallback for ${productId}.`);
   return sourceProductMarketingContent(product);
 }

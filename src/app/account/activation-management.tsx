@@ -46,6 +46,10 @@ export function ActivationManagement({ products, initialError }: { products: Cus
     if (readFeedbackActive && !refreshing && readResult) feedback.current?.focus({ preventScroll: true });
   }, [readFeedbackActive, refreshing, readResult]);
 
+  useEffect(() => {
+    if (!readFeedbackActive && !revoking && (notice || error)) feedback.current?.focus({ preventScroll: true });
+  }, [readFeedbackActive, revoking, notice, error]);
+
   async function revoke(activationId: string, label: string) {
     if (refreshInFlight.current) return;
     if (!window.confirm(`Revoke activation for ${label}? This frees its activation slot without revoking your product entitlement. An offline device with a valid perpetual entitlement can keep using the app until its next successful online check. Time-limited offline access ends at its signed end date.`)) return;

@@ -25,7 +25,7 @@
     },
     "local-browser-smoke": {
       "mode": "manual",
-      "instructions": "Run pnpm dev and manually inspect affected public routes. A local login form or account placeholder is not WorkOS, API, staging, or production evidence; do not use customer data or production credentials locally."
+      "instructions": "Run pnpm dev and manually inspect affected public routes. A local login form or account placeholder is not WorkOS, API, staging, or production evidence; do not use customer data or production credentials locally. For isolated R11B mounted-component scenarios, run node scripts/r11b-browser-fixture.mjs and open http://127.0.0.1:4317. It uses synthetic action/router/auth boundaries and the real licensing parser with blocked external requests; it is not native Next Server Action, WorkOS, staging, or production evidence. Stop the loopback fixture with Ctrl-C after validation."
     },
     "workos-auth-staging": {
       "mode": "manual",

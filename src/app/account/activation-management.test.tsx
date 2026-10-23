@@ -416,3 +416,19 @@ describe("device-specific revoke accessible names", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+
+it.each(["success", "denied", "uncertain"])("focuses %s revoke feedback after the pending control loses focus", async outcome => {
+  // Retain the mounted feedback ref across authoritative initial-prop changes.
+  const initial = render(products, "licensingUnavailable");
+  const feedbackElement = (initial.props.children as unknown[]).find(child => isValidElement<{role: string}>(child) && child.props.role === "alert") as ReactElement<{ref: {current: {focus: (options: unknown) => void} | null}} >;
+  const focus = vi.fn(); feedbackElement.props.ref.current = { focus };
+  render(products);
+  respond(async () => {
+    if (outcome === "uncertain") throw new Error("lost response");
+    return outcome === "denied" ? Response.json({error:"activationUnavailable"}, {status:404}) : Response.json({revoked:true});
+  });
+  await click();
+  markup();
+  expect(focus).toHaveBeenCalledWith({preventScroll:true});
+});

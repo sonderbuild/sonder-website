@@ -313,3 +313,94 @@ busy-state announcements with VoiceOver, dynamic server-list updates in the
 actual Next runtime, and credentialed/fresh-target staging acceptance remain
 **UNRUN/blocked** under the existing gates. No staging status was promoted. No
 API request, provider operation, credentials, D1 work, deployment or Git push.
+
+
+## Consolidated mounted-browser validation — 2026-10-23
+
+**LOCAL COMPONENT SCENARIOS VERIFIED; native Next transport, full account-route,
+VoiceOver speech and staging acceptance remain UNRUN.** Baseline `5ee566b`.
+The registered browser hook was manual-only; the available deterministic tests
+used a Node hook harness, not a mounted account environment, and no website
+service was running. The minimum necessary addition is
+`scripts/r11b-browser-fixture.mjs`, referenced by the existing browser hook. Run
+`node scripts/r11b-browser-fixture.mjs`, open `http://127.0.0.1:4317`, and stop it
+with Ctrl-C. It uses installed esbuild/React without installing dependencies.
+It adds no website route, authentication mechanism or provider tooling.
+
+Scope of evidence: the actual client component mounts in the Codex in-app
+browser, with native browser confirmation, real React effects/transitions and
+the actual `customerLicensing` validation/projection function. Only its server
+action and router seams are replaced. Synthetic fetch responses cover the
+existing licensing GET, CSRF GET and revoke POST shapes; no HTTP request leaves
+the fixture. The static server binds loopback only, serves just HTML/JS, and CSP
+blocks network connections. Its visible request ledger records simulated calls,
+not backend execution. The isolated stylesheet is not the full website layout.
+
+Fixture modes include named/duplicate/unnamed devices, initial load failure,
+network loss, delayed responses, empty results, authentication/customer denials,
+definite revoke rejection and response loss with either applied or unchanged
+server state. Explicit controls release pending replies, replace authoritative
+props, and unmount the account. Scenario reset creates a fresh component;
+`Replace server list` updates props without remounting. The harness itself needed
+urgent ledger/control updates outside pending transitions and keyed scenario
+resets before reliable repeated execution; these were fixture corrections, not
+production defects.
+
+| Scenario | Result | Mounted evidence / limit |
+| --- | --- | --- |
+| Device-specific accessible names | PASS | Native browser accessibility tree reports MacBook Pro, two distinct Studio Mac positions and an unnamed-device position. No internal ID in button names. |
+| Device keyboard order | PASS | Tab reaches the next device and Shift-Tab returns to the previous device. |
+| Native confirmation / cancellation | PASS | Established perpetual/offline wording shown in actual browser confirm; dismissing leaves the ledger empty and target focus intact. Native dialog internal keyboard traversal/speech was not inspected. |
+| Pending revoke | PASS | Target retains device-specific name, native disabled state and `aria-busy=true`; counts remain at 4/8 before completion, with one CSRF GET and one revoke POST. |
+| Successful revoke / updated list | PASS | After response and simulated router read, server list becomes 3/8, target disappears, duplicate/unnamed positions recompute. Exactly one revoke POST. |
+| Revoke completion focus, baseline | FAIL | Reproduced document-level focus loss after pending control/completion, including removed targets. Result status was present but not focused. |
+| Revoke completion focus, corrected | PASS | Result receives focus; Tab reaches the first remaining device. Success, definite failure and uncertain failure all focus their status/alert feedback. |
+| Definite revoke rejection | PASS | 404 remains definite failure, no uncertain-recovery action, no success/capacity inference; focused alert, original 4/8 list. |
+| Lost revoke response, server applied | PASS | Uncertain wording and refresh action; no optimistic change before read. Recovery returns 3/8 and explicitly does not confirm earlier outcome. |
+| Lost revoke response, server unchanged | PASS | Recovery returns original 4/8 with target retained; no inferred revoke success. |
+| Recovery read loading / repeated clicks | PASS | Busy disabled native button and status role; clicking the disabled control adds no request. Ledger remains one revoke POST plus one read GET. |
+| Recovery network failure then successful read | PASS | Focused alert hides stale list; subsequent read restores actual state. Ledger remains one revoke POST with additional GETs only. |
+| Initial failure retry by keyboard | PASS | Enter starts delayed read; Space also activates retry. No automatic request. Pending button is busy/disabled; one GET and no POST after repeated click. |
+| Successful initial retry / focus | PASS | Actual returned Travel Mac list, result status focused, retry removed. |
+| Network-loss initial retry | PASS | Focused recoverable alert and retry; no invented empty-account success, no POST. |
+| Expired session | PASS | Focused distinct session-expiry alert and sign-in link; initial retry removed. Link destination was inspected, not followed/authenticated. |
+| Unlinked / disabled / unverified customer | PASS | Each typed denial renders its distinct focused alert with no initial retry or activation list. |
+| Empty successful read | PASS | Empty-account message only after an actual validated empty fixture response; focused success status, GET only. |
+| Stale delayed response after new props | PASS | Replace server list while old read is pending, then release it: Travel Mac remains, obsolete data/status is not applied. |
+| Late read after component unmount | PASS | Releasing old read does not remount/render account state; no browser errors/warnings. This simulates navigation cleanup, not a full Next navigation. |
+| Status/alert accessibility semantics | PASS | DOM snapshots expose status/alert roles, focused result text and busy attributes; native AX exposes names/disabled controls. Spoken announcements are not inferred. |
+| VoiceOver speech | UNRUN | Installed but inactive; no speech-capture tool available in this session. No synthetic speech or AX-text substitute. |
+| Full account route/layout and native Next action transport | UNRUN | Fixture substitutes action/router/auth seams; it does not prove native page POST/action serialization, session changes or full navigation. |
+| Credentialed fresh-target staging | UNRUN | Existing accepted-target/session/ownership/CSRF and installation refresh gates remain blocked/unrun; no staging mutation authorized or attempted. |
+
+Directly observed production fix: a four-line effect focuses the existing
+feedback paragraph when a revoke completes with success, definite rejection or
+uncertainty. Existing read-result focus behavior remains separate. Confirmation,
+mutation addressing, server authority, refresh, parsing and error semantics are
+unchanged. Three focused regressions cover those result branches. No shared
+contract/API mismatch was found.
+
+Validation after the fix:
+
+- `pnpm test src/app/account/activation-management.test.tsx` — **49 PASS**.
+- Registered `pnpm test` — **217 PASS / 14 files**; `pnpm lint` — **PASS**.
+- Supported production build
+  `NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID='' SANITY_DATASET='' SONDER_API_ORIGIN='' pnpm build --webpack`
+  — **PASS**, including TypeScript and 13/13 generation entries. Existing default
+  Turbopack restriction is not reclassified by this fallback evidence.
+- Mounted browser scenarios above, console inspection and scoped self-review —
+  **PASS** after the focus correction; `git diff --check` — **PASS**.
+
+Remaining release acceptance: verify full account-route keyboard/VoiceOver and
+native Next action transport, including authenticated expiry/linkage, ownership
+and CSRF, against the separately authorized accepted staging target; verify
+post-revoke installation refresh rejection under existing API staging gates.
+Historical acceptance is preserved and fresh-target acceptance is not promoted.
+No live account, provider request, D1 access, credential change, deployment,
+production operation, R17 setup or Git push occurred. The local fixture server
+was stopped after inspection.
+
+Next release-readiness action: complete the existing protected staging
+website/API account-session and R11B checklist once the accepted target and
+separate staging authorization are available; retain the remaining UNRUN gates
+until that evidence exists.

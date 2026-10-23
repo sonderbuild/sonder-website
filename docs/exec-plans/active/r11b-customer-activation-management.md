@@ -87,7 +87,62 @@ Historical R11B evidence above remains historical; fresh-target acceptance remai
 blocked as recorded in the existing roadmap. This task changes only the website
 consumer and its tests/documentation; no database mutation, deployment or push.
 
-Next product task: align the existing account revoke confirmation with the
+Selected follow-up at that checkpoint (completed locally below): align the existing account revoke confirmation with the
 shared perpetual/offline entitlement effects. Its current blanket ticket-expiry
 wording does not express continued perpetual offline use until reconnection;
 change presentation and focused tests only, keeping revocation semantics intact.
+
+
+## Local revoke-confirmation semantics — 2026-10-23
+
+**IMPLEMENTED / LOCALLY VERIFIED; browser and new staging acceptance UNRUN.**
+Baseline website `ff09669`. Reconciled the shared customer-licensing revocation
+contract and browser-activation offline-first v2 policy against API
+`licensing-lifecycle.ts` / `activation-revocation.ts`: revocation marks only the
+activation revoked and releases its slot; it does not revoke the entitlement.
+Already-revoked requests remain idempotent. The next successful online refresh
+rejects the installation. Valid perpetual offline access has no arbitrary expiry;
+time-limited offline access ends at the signed end timestamp. Legacy v1 ticket
+expiry is not reinterpreted; the website receives no ticket version or entitlement
+kind, so the confirmation describes conditional semantics rather than guessing
+which ticket a device holds. No shared contract/API mismatch or ambiguity found.
+
+The confirmation now reads:
+
+> Revoke activation for [device label]? This frees its activation slot without
+> revoking your product entitlement. An offline device with a valid perpetual
+> entitlement can keep using the app until its next successful online check.
+> Time-limited offline access ends at its signed end date.
+
+Existing `Revoking…` pending feedback retains the last server-provided counts.
+Confirmed success announces `Activation revoked. Your product entitlement is
+unchanged.` and requests the existing server refresh; counts are never adjusted
+optimistically. Existing401/403/404 rejection feedback remains a failure without
+changing entitlement state. CSRF/pre-request failure says the operation could
+not start. A lost response,408,5xx, malformed or unconfirmed success response says
+`We could not confirm whether this activation was revoked. Refresh your account
+to check its status before trying again.` A refresh exception after confirmed
+success explicitly says revocation succeeded but the activation list could not
+refresh. No expiry countdown, immediate offline invalidation or automatic retry.
+
+Validation:
+
+- Registered focused Vitest: account activation-management, account page and
+  revoke relay suites — **34 PASS / 3 files**, including15 new component tests.
+- `pnpm test` — **150 PASS / 12 files**. `pnpm lint` — **PASS**.
+- `NEXT_TELEMETRY_DISABLED=1 SANITY_PROJECT_ID='' SANITY_DATASET='' SONDER_API_ORIGIN='' pnpm build --webpack`
+  — **PASS**, including TypeScript and page generation. The documented Webpack
+  alternative avoids the already-recorded local Turbopack worker-port restriction;
+  no bundler configuration or environment file was changed.
+- `git diff --check` — **PASS**; final self-review preserves the server-authoritative
+  count/entitlement path, same-origin CSRF relay and existing error boundaries.
+  Node interaction tests invoke the real component callbacks/JSX with a small
+  mocked hook/router harness; they are not mounted-browser or accessibility proof.
+
+No API mutation, database/provider request, credential work, infrastructure,
+deployment, production operation or push. Historical R11B staging evidence and
+fresh-target blockers retain their original scope.
+
+Next product-facing task: add an explicit account refresh action for uncertain
+revocation outcomes, using the existing server read path without automatically
+retrying the mutation or guessing activation/capacity state.

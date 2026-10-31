@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "shareDevelopmentEnv": true,
+  "requiredEnv": [
+    "WORKOS_API_KEY",
+    "WORKOS_CLIENT_ID",
+    "WORKOS_COOKIE_PASSWORD"
+  ],
+  "authkitLoginPath": "/login",
+  "port": 3000
+}

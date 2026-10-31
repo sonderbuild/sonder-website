@@ -1,3 +1,5 @@
+> Historical documentation index. Use [current implementation and publication boundaries](publication.md) for this source snapshot. Retained historical acceptance does not qualify current providers or release.
+
 # sonder product platform
 
 This directory is the source of truth for systems shared by sonder products. It

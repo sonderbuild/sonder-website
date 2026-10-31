@@ -1,0 +1,37 @@
+name: Public release website backend checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: website-local-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  website:
+    if: vars.SONDER_LOCAL_CHECKS_ZERO_COST_QUALIFIED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SANITY_PROJECT_ID: ''
+      SANITY_DATASET: ''
+      SONDER_API_ORIGIN: ''
+      WORKOS_API_KEY: sk_test_synthetic_build_only
+      WORKOS_CLIENT_ID: client_synthetic_build_only
+      WORKOS_COOKIE_PASSWORD: synthetic-build-cookie-password-not-for-runtime
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: corepack pnpm install --frozen-lockfile --ignore-scripts
+      - run: corepack pnpm lint
+      - run: corepack pnpm test
+      - run: corepack pnpm build
+      - run: corepack pnpm exec tsc --noEmit
+# No provider credentials, external CMS/API content, deployment or workflow dispatch.
+# Auth values above are intentionally synthetic build/test configuration only.

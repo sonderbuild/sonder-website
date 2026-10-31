@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "required": [
+    "eslint",
+    "vitest",
+    "next-production-build",
+    "local-browser-smoke",
+    "workos-auth-staging",
+    "website-api-account-session-staging",
+    "api-owned-commerce-email-staging",
+    "production-release-validation",
+    "cloudflare-local-qualification"
+  ],
+  "hooks": {
+    "eslint": {
+      "mode": "command",
+      "command": "pnpm lint"
+    },
+    "vitest": {
+      "mode": "command",
+      "command": "pnpm test"
+    },
+    "next-production-build": {
+      "mode": "command",
+      "command": "pnpm build"
+    },
+    "local-browser-smoke": {
+      "mode": "manual",
+      "instructions": "Use only synthetic local fixtures: node scripts/r11b-browser-fixture.mjs or node scripts/release-1-checkout-browser-fixture.mjs. Inspect affected routes and stop owned loopback fixtures afterward. No real provider/customer data or installed acceptance follows."
+    },
+    "workos-auth-staging": {
+      "mode": "manual",
+      "instructions": "BLOCKED until an exact separately authorized protected staging target, reader and effect budget exist. Verify current shared contracts first; no real mail, social login or credentials from routine local work."
+    },
+    "website-api-account-session-staging": {
+      "mode": "manual",
+      "instructions": "With separate explicit staging authority, verify authenticated linked/unlinked/unavailable session and cross-customer denial through server-side API consumers. No browser-selected identity or retained customer data."
+    },
+    "api-owned-commerce-email-staging": {
+      "mode": "manual",
+      "instructions": "API-owned WorkOS/Lemon effects, checkout/webhooks/reconciliation and any mail require separate exact staging authorization. A browser redirect, local fixture or preflight is not commerce or delivery acceptance."
+    },
+    "production-release-validation": {
+      "mode": "manual",
+      "instructions": "UNRUN. Production hosting, purchases, email, migrations, provider configuration and release enablement require separate explicit authority and accepted shared gates. Do not operate production during local validation."
+    },
+    "cloudflare-local-qualification": {
+      "mode": "manual",
+      "instructions": "Local synthetic application checks only: node scripts/cloudflare/prepare-build.mjs; use its exact output directory with node scripts/cloudflare/runtime-check.mjs <directory>. No provider credentials, actual capacity claims, runtime replacement or deployment. Resource-specific private operator tooling is retained separately and is not part of this public source snapshot."
+    }
+  }
+}

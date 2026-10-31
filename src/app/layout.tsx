@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  return <html lang="en"><body className="flex min-h-svh flex-col"><Header /><main className="flex-1">{children}</main><Footer className="site-footer" /></body></html>;
+  return <html lang="en"><body className="flex min-h-svh flex-col"><a className="skip-link" href="#main-content">Skip to content</a><Header /><main id="main-content" tabIndex={-1} className="flex-1">{children}</main><Footer className="site-footer" /></body></html>;
 }

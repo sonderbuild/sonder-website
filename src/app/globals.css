@@ -60,3 +60,7 @@ body:has(.homepage-scenes) > .site-footer { display: none; }
 .link { text-underline-offset: 0.25em; transition: text-decoration-color 150ms ease; }
 .link:hover, .link:focus-visible { text-decoration-line: underline; }
 .display { font-family: Iowan Old Style, Baskerville, Times New Roman, serif; font-weight: 400; letter-spacing: -0.06em; }
+
+.skip-link { position: fixed; top: 0.5rem; left: 0.5rem; z-index: 100; transform: translateY(-200%); padding: 0.75rem 1rem; background: var(--color-ink); color: var(--color-paper); }
+.skip-link:focus { transform: none; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }

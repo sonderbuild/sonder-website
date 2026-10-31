@@ -1,3 +1,5 @@
+import type { CanonicalProductId } from "./product-identities";
+
 export type ProductMedia = {
   kind: "image" | "video" | "gif" | "demo";
   label: string;
@@ -13,7 +15,9 @@ export type ProductSection =
   | { type: "feature-highlight"; eyebrow?: string; title: string; description: string };
 
 export type Product = {
-  slug: "pulse" | "frame" | "crate";
+  id: CanonicalProductId;
+  slug: string;
+  marketingSource: "source" | "sanity";
   name: string;
   tagline: string;
   description: string;
@@ -25,19 +29,19 @@ export type Product = {
 
 export const products: Product[] = [
   {
-    slug: "pulse", name: "Pulse", tagline: "Understand your Mac.", description: "A quiet system monitoring and insights app designed to reveal what is happening beneath your workflow.", status: "In development", platform: "macOS", category: "macOS App",
+    id: "mactric", slug: "mactric", marketingSource: "sanity", name: "Mactric", tagline: "Understand your Mac.", description: "A quiet system monitoring and insights app designed to reveal what is happening beneath your workflow.", status: "In development", platform: "macOS", category: "macOS App",
     sections: [
       {
         type: "statement",
         eyebrow: "A considered utility",
         statement: "Understanding your Mac should not mean watching it all day.",
-        description: "Pulse turns the activity beneath your workflow into useful context—not a stream of alerts. It stays clear, quiet, and ready when a closer look matters.",
+        description: "Mactric turns the activity beneath your workflow into useful context—not a stream of alerts. It stays clear, quiet, and ready when a closer look matters.",
       },
       {
         type: "media",
         media: {
           kind: "image",
-          label: "Pulse, in use",
+          label: "Mactric, in use",
           description: "Future screenshots, dashboard views, animations, and product films will live here.",
         },
       },
@@ -45,36 +49,36 @@ export const products: Product[] = [
         type: "feature-highlight",
         eyebrow: "Live system awareness",
         title: "See the state of your Mac as it changes.",
-        description: "Pulse brings the signals worth noticing into one calm view, so CPU, memory, storage, and network activity can be understood without digging through utilities or interrupting the task at hand.",
+        description: "Mactric brings the signals worth noticing into one calm view, so CPU, memory, storage, and network activity can be understood without digging through utilities or interrupting the task at hand.",
       },
       {
         type: "feature-highlight",
         eyebrow: "Historical patterns",
         title: "Notice the shape of a day, not just a moment.",
-        description: "A single reading rarely tells the whole story. Pulse makes room for patterns to emerge, helping you understand what is normal for your Mac and what has genuinely changed.",
+        description: "A single reading rarely tells the whole story. Mactric makes room for patterns to emerge, helping you understand what is normal for your Mac and what has genuinely changed.",
       },
       {
         type: "feature-highlight",
         eyebrow: "Clear diagnostics",
         title: "Find the cause without the noise.",
-        description: "When something feels off, Pulse is there to help make sense of it. The goal is not more data, but a clearer path from a question to an answer.",
+        description: "When something feels off, Mactric is there to help make sense of it. The goal is not more data, but a clearer path from a question to an answer.",
       },
       {
         type: "feature-highlight",
         eyebrow: "Thoughtful presentation",
         title: "A technical tool with a quieter presence.",
-        description: "Pulse is designed to be useful at a glance and unobtrusive the rest of the time. Its information is precise, but its presence is deliberately restrained.",
+        description: "Mactric is designed to be useful at a glance and unobtrusive the rest of the time. Its information is precise, but its presence is deliberately restrained.",
       },
       {
         type: "statement",
         eyebrow: "In direction",
         statement: "A clearer relationship with the machine you use every day.",
-        description: "Pulse is being shaped as a companion for people who care about their tools: a more attentive way to understand a Mac without asking it to become the centre of attention.",
+        description: "Mactric is being shaped as a companion for people who care about their tools: a more attentive way to understand a Mac without asking it to become the centre of attention.",
       },
     ],
   },
   {
-    slug: "frame", name: "Frame", tagline: "Make room for the document.", description: "A focused workspace for moving through documents with greater clarity.", status: "In development", platform: "macOS", category: "macOS App",
+    id: "frame", slug: "frame", marketingSource: "source", name: "Frame", tagline: "Make room for the document.", description: "A focused workspace for moving through documents with greater clarity.", status: "In development", platform: "macOS", category: "macOS App",
     sections: [
       {
         type: "statement",
@@ -117,7 +121,7 @@ export const products: Product[] = [
     ],
   },
   {
-    slug: "crate", name: "Crate", tagline: "Know the music you keep.", description: "Metadata intelligence for a more useful, more personal music library.", status: "In development", platform: "macOS", category: "macOS App",
+    id: "crate", slug: "crate", marketingSource: "source", name: "Crate", tagline: "Know the music you keep.", description: "Metadata intelligence for a more useful, more personal music library.", status: "In development", platform: "macOS", category: "macOS App",
     sections: [
       {
         type: "statement",
@@ -168,4 +172,4 @@ export const creativeTools: CreativeTool[] = [
   { name: "Experimental music tools", description: "Small software studies for sound, rhythm, and the spaces between.", format: "In progress" },
 ];
 
-export function getProduct(slug: string) { return products.find((product) => product.slug === slug); }
+export function getProduct(slug: string) { return products.find((product) => product.slug === slug || product.id === slug); }

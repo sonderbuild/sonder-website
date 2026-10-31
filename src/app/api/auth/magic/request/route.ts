@@ -1,0 +1,47 @@
+import { getWorkOS } from "@workos-inc/authkit-nextjs";
+import { NextRequest, NextResponse } from "next/server";
+
+import { requestMagicAuth } from "@/lib/auth/magic-auth";
+import { hasValidSameOriginCsrf, jsonBody } from "@/lib/auth/request-security";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(request: NextRequest) {
+  if (!hasValidSameOriginCsrf(request)) return response({ error: "invalidRequest" }, 403);
+
+  const body = await jsonBody(request);
+  if (!body) return response({ error: "invalidRequest" }, 400);
+
+  let result: Awaited<ReturnType<typeof requestMagicAuth>>;
+  try {
+    result = await requestMagicAuth(getWorkOS().userManagement, body.email, requestContext(request));
+  } catch {
+    return response({ error: "temporarilyUnavailable" }, 503);
+  }
+  switch (result.kind) {
+    case "accepted":
+      return response({ ok: true }, 202, result.radarAuthAttemptId);
+    case "invalidEmail":
+      return response({ error: "invalidEmail" }, 400);
+    case "rateLimited":
+      return response({ error: "tryAgainLater" }, 429);
+    default:
+      return response({ error: "temporarilyUnavailable" }, 503);
+  }
+}
+
+function requestContext(request: NextRequest) {
+  return { userAgent: request.headers.get("user-agent") ?? undefined };
+}
+
+function response(body: object, status: number, radarAuthAttemptId?: string) {
+  const result = NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  result.cookies.set("sonder-magic-radar", radarAuthAttemptId ?? "", {
+    httpOnly: true,
+    maxAge: radarAuthAttemptId ? 600 : 0,
+    path: "/api/auth/magic/verify",
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+  return result;
+}

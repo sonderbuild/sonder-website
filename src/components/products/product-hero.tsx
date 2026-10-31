@@ -1,3 +1,4 @@
+import { customerPlatformAvailable } from "@/lib/site-availability";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import type { Product } from "@/data/products";
@@ -10,6 +11,7 @@ export function ProductHero({ product }: { product: Product }) {
         <h1 className="type-display text-7xl leading-[0.9] sm:text-9xl">{product.name}</h1>
         <p className="type-display mt-7 max-w-3xl text-4xl leading-[0.98] sm:text-6xl">{product.tagline}</p>
         <p className="type-body mt-8 max-w-2xl text-xl leading-8 sm:text-2xl sm:leading-9">{product.description}</p>
+        {!customerPlatformAvailable() && <p className="type-body mt-6 text-base leading-7">Not available to purchase or download yet.</p>}
         <dl className="mt-16 grid max-w-2xl gap-y-6 border-t border-[color:var(--color-line)] pt-5 text-sm sm:grid-cols-3 sm:gap-x-8">
           <div><dt className="type-body opacity-80">Category</dt><dd className="mt-1 font-medium">{product.category}</dd></div>
           <div><dt className="type-body opacity-80">Platform</dt><dd className="mt-1 font-medium">{product.platform}</dd></div>

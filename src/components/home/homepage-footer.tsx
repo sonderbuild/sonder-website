@@ -1,3 +1,5 @@
+import { legalDraftPreviewAvailable } from "@/lib/legal-publication";
+import Link from "next/link";
 import Image from "next/image";
 
 import { Container } from "@/components/ui/container";
@@ -9,7 +11,7 @@ export function HomepageFooter() {
       <Image alt="sonder" height={22} src="/sonder-wordmark.svg" unoptimized width={91} />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-8">
         <a className="link w-fit" href={`mailto:${site.email}`}>{site.email}</a>
-        <p className="type-body opacity-80">© {new Date().getFullYear()} sonder</p>
+        {legalDraftPreviewAvailable() && <nav aria-label="Legal" className="my-4 flex flex-wrap gap-4"><Link className="link" href="/impressum">Impressum (Entwurf)</Link><Link className="link" href="/datenschutz">Datenschutz (Entwurf)</Link></nav>}<p className="type-body opacity-80">© {new Date().getFullYear()} sonder</p>
       </div>
     </Container>
   </footer>;

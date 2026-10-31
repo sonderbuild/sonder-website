@@ -7,6 +7,9 @@ import { AtmosphereBackground } from "@/components/ui/atmosphere-background";
 import { Container } from "@/components/ui/container";
 import { creativeTools, products } from "@/data/products";
 
+// Fail the build if a request-specific dependency enters public output.
+export const dynamic = "error";
+
 export default function Home() {
   return <div className="homepage-scenes">
     <HomepageScene align="end" atmosphere="studio" className="relative isolate overflow-hidden border-b border-[color:var(--color-line)]">

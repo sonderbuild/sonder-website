@@ -1,0 +1,115 @@
+import type { AuthenticationResponse } from "@workos-inc/node";
+import { describe, expect, it, vi } from "vitest";
+
+import {
+  persistMagicAuthSession,
+  requestMagicAuth,
+  type MagicAuthClient,
+  verifyMagicAuth,
+} from "./magic-auth";
+
+const authenticationResponse = {
+  accessToken: "access-token",
+  refreshToken: "refresh-token",
+  user: { email: "customer@example.com", emailVerified: true, id: "user_01" },
+} as AuthenticationResponse;
+
+function client(overrides: Partial<MagicAuthClient> = {}): MagicAuthClient {
+  return {
+    authenticateWithMagicAuth: vi.fn().mockResolvedValue(authenticationResponse),
+    createMagicAuth: vi.fn().mockResolvedValue({}),
+    ...overrides,
+  };
+}
+
+describe("custom Magic Auth", () => {
+  it("requests a Magic Auth code without touching customer, license, or activation services", async () => {
+    const workos = client();
+
+    await expect(requestMagicAuth(workos, " customer@example.com ")).resolves.toEqual({ kind: "accepted" });
+    expect(workos.createMagicAuth).toHaveBeenCalledWith({ email: "customer@example.com" });
+    expect(workos.authenticateWithMagicAuth).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid email input before contacting WorkOS", async () => {
+    const workos = client();
+
+    await expect(requestMagicAuth(workos, "not-an-email")).resolves.toEqual({ kind: "invalidEmail" });
+    expect(workos.createMagicAuth).not.toHaveBeenCalled();
+  });
+
+  it("maps WorkOS request throttling to a retryable result", async () => {
+    const workos = client({ createMagicAuth: vi.fn().mockRejectedValue({ status: 429 }) });
+
+    await expect(requestMagicAuth(workos, "customer@example.com")).resolves.toEqual({ kind: "rateLimited" });
+  });
+
+  it("preserves a WorkOS Radar attempt only for the corresponding code verification", async () => {
+    const workos = client({ createMagicAuth: vi.fn().mockResolvedValue({ radarAuthAttemptId: "radar_01" }) });
+
+    await expect(requestMagicAuth(workos, "customer@example.com")).resolves.toEqual({
+      kind: "accepted",
+      radarAuthAttemptId: "radar_01",
+    });
+    await expect(verifyMagicAuth(workos, "client_01", "customer@example.com", "123456", {
+      radarAuthAttemptId: "radar_01",
+    })).resolves.toMatchObject({ kind: "authenticated" });
+    expect(workos.authenticateWithMagicAuth).toHaveBeenCalledWith({
+      clientId: "client_01",
+      code: "123456",
+      email: "customer@example.com",
+      radarAuthAttemptId: "radar_01",
+    });
+  });
+
+  it.each(["wrong", "expired"])("rejects a %s code without creating a session", async () => {
+    const workos = client({ authenticateWithMagicAuth: vi.fn().mockRejectedValue({ status: 400, code: "invalid_one_time_code" }) });
+
+    await expect(verifyMagicAuth(workos, "client_01", "customer@example.com", "123456")).resolves.toEqual({ kind: "invalidCode" });
+  });
+
+  it("verifies a code, requires verified email, and saves only the server-side session", async () => {
+    const workos = client();
+    const save = vi.fn().mockResolvedValue(undefined);
+
+    const result = await verifyMagicAuth(workos, "client_01", "customer@example.com", "123456");
+    expect(result.kind).toBe("authenticated");
+    if (result.kind !== "authenticated") throw new Error("Expected authenticated result");
+
+    await expect(persistMagicAuthSession(result.response, save)).resolves.toEqual({ kind: "authenticated" });
+    expect(workos.authenticateWithMagicAuth).toHaveBeenCalledWith({ clientId: "client_01", code: "123456", email: "customer@example.com" });
+    expect(save).toHaveBeenCalledWith(authenticationResponse);
+  });
+
+  it("fails closed when WorkOS does not report a verified email", async () => {
+    const workos = client({
+      authenticateWithMagicAuth: vi.fn().mockResolvedValue({
+        ...authenticationResponse,
+        user: { ...authenticationResponse.user, emailVerified: false },
+      }),
+    });
+
+    await expect(verifyMagicAuth(workos, "client_01", "customer@example.com", "123456")).resolves.toEqual({ kind: "unverified" });
+  });
+
+  it("does not report authentication when the session cannot be persisted", async () => {
+    const save = vi.fn().mockRejectedValue(new Error("cookie failure"));
+
+    await expect(persistMagicAuthSession(authenticationResponse, save)).resolves.toEqual({ kind: "unavailable" });
+  });
+});
+
+
+it.each([undefined, 400, 401, 403, 404, 408, 422, 500, 503, Number.NaN])("does not label an unavailable/unknown verification as invalid code: %s", async status => {
+  const workos=client({authenticateWithMagicAuth:vi.fn().mockRejectedValue(status === undefined ? new TypeError("transport lost after send") : {status})});
+  await expect(verifyMagicAuth(workos,"client_01","customer@example.com","123456")).resolves.toEqual({kind:"unavailable"});
+  expect(workos.authenticateWithMagicAuth).toHaveBeenCalledOnce();
+});
+it.each(["invalid_one_time_code","one_time_code_expired"])("retains explicit provider one-time-code rejection: %s",async code=>{
+ const workos=client({authenticateWithMagicAuth:vi.fn().mockRejectedValue({status:400,code})});
+ await expect(verifyMagicAuth(workos,"client_01","customer@example.com","123456")).resolves.toEqual({kind:"invalidCode"});
+});
+it("does not mistake malformed provider configuration for invalid user credentials",async()=>{
+ const workos=client({authenticateWithMagicAuth:vi.fn().mockRejectedValue({status:400,error:"invalid_request"})});
+ await expect(verifyMagicAuth(workos,"client_01","customer@example.com","123456")).resolves.toEqual({kind:"unavailable"});
+});

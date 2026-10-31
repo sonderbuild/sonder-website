@@ -1,38 +1,15 @@
-This is the public website and customer-account surface for [sonder](https://sonder.build), an independent software studio.
+# sonder website
 
-The product-platform architecture, security baseline, and operations model are documented in [docs/product-platform](./docs/product-platform/README.md).
+Next.js website with a local product catalog, optional published Sanity marketing content, custom WorkOS authentication and server-side customer account/activation/checkout presentation. The API owns identity linkage, commerce, entitlements, licensing and durable state; a browser redirect never proves payment.
 
-## Getting Started
+See [current implementation and publication boundaries](docs/product-platform/publication.md). Earlier product-platform documents are retained historical context; they do not establish current provider, hosting or production acceptance. Cross-repository contracts remain owned by sonder-system and service implementation by sonder-api.
 
-First, run the development server:
+## Local development and validation
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Use the locked pnpm version and dependencies. Configure a dedicated local test environment; never copy production or staging credentials into a development checkout. `pnpm dev` starts development, `pnpm lint` and `pnpm test` run local checks, and `pnpm build` generates the production artifact and Next route types before a separate `pnpm exec tsc --noEmit` check.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[Registered validation](.development-harness/validation.json) distinguishes local checks from manual provider and production evidence. The CI backend job remains conditional on separate zero-cost qualification.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Git deployment boundary
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`vercel.json` sets `git.deploymentEnabled` to `false` for all branches. This repository setting does not prove that every connected project honors the configuration. Before any push, verify all connected projects, their roots/configuration, Git triggers and existing deployment state using authorized read access. Provider settings, deployments, purchases and release enablement require separate authorization. Preserve the existing public deployment.

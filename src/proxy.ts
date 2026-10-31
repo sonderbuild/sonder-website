@@ -1,7 +1,10 @@
 import { authkitProxy } from "@workos-inc/authkit-nextjs";
+import { guardSiteAvailability } from "@/lib/auth/site-availability";
+import { guardWorkOSOrigin } from "@/lib/auth/workos-origin";
 
-export default authkitProxy();
+export default guardSiteAvailability((request, event) => guardWorkOSOrigin(authkitProxy())(request, event));
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Marketing never inspects or refreshes sessions; protected consumers still do.
+  matcher: ["/account/:path*", "/login", "/api/:path*"],
 };

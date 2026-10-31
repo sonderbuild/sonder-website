@@ -1,0 +1,150 @@
+import { timingSafeEqual } from "node:crypto";
+
+import type { AuthenticationResponse } from "@workos-inc/node";
+import { activationReturnPath } from "@/lib/activation-approval";
+
+export type SocialProvider = "apple" | "google";
+
+type WorkOSSocialProvider = "AppleOAuth" | "GoogleOAuth";
+
+export type SocialAuthClient = {
+  authenticateWithCode(input: { clientId: string; code: string }): Promise<AuthenticationResponse>;
+  getAuthorizationUrl(input: {
+    clientId: string;
+    provider: WorkOSSocialProvider;
+    redirectUri: string;
+    state: string;
+  }): string;
+};
+
+export type SocialCallback =
+  | { kind: "cancelled" }
+  | { kind: "invalid" }
+  | { kind: "code"; code: string; provider: SocialProvider; returnTo?: string };
+
+export const socialStateCookieName = "sonder-social-state";
+
+const workOSProvider: Record<SocialProvider, WorkOSSocialProvider> = {
+  apple: "AppleOAuth",
+  google: "GoogleOAuth",
+};
+
+/** Decision0029: no production social login, even with a stale allowlist.
+ * Historical staging requires explicit server configuration; SSR1 never opts in. */
+export function historicalSocialLoginAllowed(): boolean {
+  return process.env.VERCEL_ENV === "preview" && process.env.SONDER_RELEASE_SCOPE === "historical-staging" &&
+    !("SOLO_RELEASE_PROFILE" in process.env) && !("SOLO_RELEASE_ADMISSION" in process.env);
+}
+
+export function configuredSocialProviders(value = process.env.WORKOS_SOCIAL_PROVIDERS): SocialProvider[] {
+  if (!historicalSocialLoginAllowed()) return [];
+  if (!value) return [];
+
+  return value.split(",").map((provider) => provider.trim()).flatMap((provider) => {
+    const parsed = socialProvider(provider);
+    return parsed ? [parsed] : [];
+  }).filter((provider, index, all) => all.indexOf(provider) === index);
+}
+
+export function socialProvider(value: string): SocialProvider | undefined {
+  return value === "apple" || value === "google" ? value : undefined;
+}
+
+export function createSocialState(): string {
+  return crypto.randomUUID();
+}
+
+export function encodeSocialState(provider: SocialProvider, state: string, returnTo?: string): string {
+  const safeReturnTo = activationReturnPath(returnTo);
+  return safeReturnTo ? `${provider}.${state}.${Buffer.from(safeReturnTo).toString("base64url")}` : `${provider}.${state}`;
+}
+
+export function createSocialAuthorizationUrl(
+  client: SocialAuthClient,
+  input: { clientId?: string; redirectUri?: string; provider: SocialProvider; state: string },
+  enabledProviders: readonly SocialProvider[],
+): string | undefined {
+  if (!historicalSocialLoginAllowed()) return undefined;
+  if (!enabledProviders.includes(input.provider) || !input.clientId || !isAllowedCallbackUrl(input.redirectUri) || !isState(input.state)) {
+    return undefined;
+  }
+
+  try {
+    return client.getAuthorizationUrl({
+      clientId: input.clientId,
+      provider: workOSProvider[input.provider],
+      redirectUri: input.redirectUri,
+      state: input.state,
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+export function readSocialCallback(
+  input: { code: string | null; error: string | null; state: string | null; storedState: string | undefined },
+  enabledProviders: readonly SocialProvider[],
+): SocialCallback {
+  if (!historicalSocialLoginAllowed()) return { kind: "invalid" };
+  const stored = parseStoredState(input.storedState);
+  if (!stored || !input.state || !statesMatch(stored.state, input.state) || !enabledProviders.includes(stored.provider)) {
+    return { kind: "invalid" };
+  }
+  if (input.error) return { kind: "cancelled" };
+  if (!isOpaqueCode(input.code)) return { kind: "invalid" };
+  return { kind: "code", code: input.code, provider: stored.provider, ...(stored.returnTo ? { returnTo: stored.returnTo } : {}) };
+}
+
+export async function authenticateSocialCode(
+  client: Pick<SocialAuthClient, "authenticateWithCode">,
+  clientId: string | undefined,
+  code: string,
+): Promise<{ kind: "authenticated"; response: AuthenticationResponse } | { kind: "failed" }> {
+  if (!historicalSocialLoginAllowed()) return { kind: "failed" };
+  if (!clientId || !isOpaqueCode(code)) return { kind: "failed" };
+
+  try {
+    const response = await client.authenticateWithCode({ clientId, code });
+    return response.user.emailVerified ? { kind: "authenticated", response } : { kind: "failed" };
+  } catch {
+    return { kind: "failed" };
+  }
+}
+
+function parseStoredState(value: string | undefined): { provider: SocialProvider; state: string; returnTo?: string } | undefined {
+  if (!value) return undefined;
+  const [rawProvider, state, encodedReturnTo, ...extra] = value.split(".");
+  const provider = socialProvider(rawProvider);
+  if (!provider || !state || extra.length > 0 || !isState(state)) return undefined;
+  if (!encodedReturnTo) return { provider, state };
+  try {
+    const returnTo = activationReturnPath(Buffer.from(encodedReturnTo, "base64url").toString());
+    return returnTo ? { provider, state, returnTo } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function isAllowedCallbackUrl(value: string | undefined): value is string {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || (url.protocol === "http:" && url.hostname === "localhost");
+  } catch {
+    return false;
+  }
+}
+
+function isState(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function isOpaqueCode(value: string | null): value is string {
+  return !!value && value.length <= 2_048 && /^[A-Za-z0-9._~-]+$/.test(value);
+}
+
+function statesMatch(left: string, right: string): boolean {
+  const leftBytes = Buffer.from(left);
+  const rightBytes = Buffer.from(right);
+  return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
+}
